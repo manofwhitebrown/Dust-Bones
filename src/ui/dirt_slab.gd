@@ -6,6 +6,8 @@ extends Control
 signal touched
 signal progress_reported(slab_id: int, fraction: float)
 signal reveal_popped
+signal stroke_moved(speed: float)
+signal stroke_ended
 
 const MASK_SIZE: int = 256
 const CELL_SHIFT: int = 3 # 8x8 mask px per progress cell -> 32x32 grid
@@ -43,6 +45,7 @@ var _last_report_msec: int = 0
 var _touch: int = -1
 var _last_pos: Vector2 = Vector2.ZERO
 var _carry: float = 0.0
+var _last_event_usec: int = 0
 var _input_on: bool = false
 var _image: Image
 var _tex: ImageTexture
@@ -109,6 +112,7 @@ func set_input_enabled(on: bool) -> void:
 func cancel_touch() -> void:
 	if _touch != -1:
 		_touch = -1
+		stroke_ended.emit()
 		_force_report = true
 		set_process(true)
 
@@ -148,6 +152,7 @@ func _gui_input(event: InputEvent) -> void:
 				_touch = t.index
 				_last_pos = t.position
 				_carry = 0.0
+				_last_event_usec = Time.get_ticks_usec()
 				touched.emit()
 				_stamp(t.position * _px_scale())
 		elif t.index == _touch:
@@ -169,8 +174,12 @@ func _stroke_to(pos: Vector2) -> void:
 	var b: Vector2 = pos * k
 	var seg: float = a.distance_to(b)
 	_last_pos = pos
+	var now: int = Time.get_ticks_usec()
+	var dt: float = maxf(float(now - _last_event_usec) / 1000000.0, 0.004)
+	_last_event_usec = now
 	if seg <= 0.0:
 		return
+	stroke_moved.emit(seg / k / dt)
 	var spacing: float = maxf(float(_kernel_r) * STAMP_SPACING, 1.0)
 	var dir: Vector2 = (b - a) / seg
 	var dist: float = spacing - _carry

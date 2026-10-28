@@ -1,0 +1,91 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/prestige_view.gd" id="1_pv"]
+[ext_resource type="Script" path="res://src/ui/hold_button.gd" id="2_hold"]
+
+[node name="PrestigeView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pv")
+
+[node name="Scroll" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 24.0
+offset_right = -40.0
+offset_bottom = -24.0
+horizontal_scroll_mode = 0
+
+[node name="Box" type="VBoxContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 24
+
+[node name="Title" type="Label" parent="Scroll/Box"]
+layout_mode = 2
+theme_type_variation = &"Heading"
+text = "Move On"
+
+[node name="Site" type="Label" parent="Scroll/Box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 52
+autowrap_mode = 3
+
+[node name="Gain" type="Label" parent="Scroll/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.753, 0.392, 0.235, 1)
+theme_override_font_sizes/font_size = 64
+
+[node name="Bonus" type="Label" parent="Scroll/Box"]
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Resets" type="Label" parent="Scroll/Box"]
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Keeps" type="Label" parent="Scroll/Box"]
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Note" type="Label" parent="Scroll/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.3, 0.24, 1)
+theme_override_font_sizes/font_size = 32
+autowrap_mode = 3
+
+[node name="Begin" type="Button" parent="Scroll/Box"]
+custom_minimum_size = Vector2(0, 144)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 48
+text = "Begin Prestige"
+
+[node name="Confirm" type="VBoxContainer" parent="Scroll/Box"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Warn" type="Label" parent="Scroll/Box/Confirm"]
+layout_mode = 2
+text = "This resets your progress. Hold the button to confirm."
+autowrap_mode = 3
+
+[node name="Hold" type="Button" parent="Scroll/Box/Confirm"]
+custom_minimum_size = Vector2(0, 144)
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "Hold to confirm"
+script = ExtResource("2_hold")
+
+[node name="Cancel" type="Button" parent="Scroll/Box/Confirm"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+focus_mode = 0
+text = "Not yet"
