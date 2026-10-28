@@ -3,6 +3,10 @@ extends PanelContainer
 ## Coins, income/sec and (when > 0) fieldwork. Signal-driven; never polls.
 
 const BASE_MARGIN_TOP: float = 20.0
+const FLASH_COLOR: Color = Color("#C0643C")
+const FLASH_TIME: float = 0.5
+
+var _flash_tween: Tween
 
 @onready var _margin: MarginContainer = $Margin
 @onready var _coins: TickLabel = $Margin/Row/Left/CoinsRow/Coins
@@ -15,6 +19,7 @@ const BASE_MARGIN_TOP: float = 20.0
 func _ready() -> void:
 	EventBus.currency_changed.connect(_on_currency)
 	EventBus.income_changed.connect(_on_income)
+	EventBus.item_purchased.connect(_on_item_purchased)
 	_on_currency("coins", GameState.get_balance("coins"), true)
 	_on_currency("fieldwork", GameState.get_balance("fieldwork"), true)
 	_income.set_value(GameState.get_income_per_sec(), true)
@@ -38,3 +43,11 @@ func _on_currency(currency: String, amount: float, instant: bool = false) -> voi
 
 func _on_income(per_second: float) -> void:
 	_income.set_value(per_second)
+
+
+func _on_item_purchased(_item_id: String, _count: int) -> void:
+	if _flash_tween != null:
+		_flash_tween.kill()
+	_income.modulate = FLASH_COLOR
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(_income, "modulate", Color.WHITE, FLASH_TIME)
