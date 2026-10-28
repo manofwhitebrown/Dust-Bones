@@ -1,24 +1,25 @@
 {
  "reveal_threshold": 0.85,
  "offline_cap_hours": 8,
- "offline_efficiency": 0.5,
+ "offline_efficiency": 0.15,
  "autosave_seconds": 30,
  "pity": {
-  "uncommon": 8,
-  "rare": 40,
-  "epic": 150,
-  "legendary": 600
+  "uncommon": 10,
+  "rare": 100,
+  "epic": 600,
+  "legendary": 4500
  },
  "rarity_weights": {
-  "common": 60,
+  "common": 70,
   "uncommon": 25,
-  "rare": 10,
-  "epic": 4,
-  "legendary": 1
+  "rare": 1.2,
+  "epic": 0.12,
+  "legendary": 0.002
  },
  "cost_growth_default": 1.15,
  "hardness_per_tier": 0.12,
  "offline_min_seconds": 60,
  "offline_max_rolls": 500,
- "auto_dig_max_rolls": 200
+ "auto_dig_max_rolls": 200,
+ "auto_dig_value_mult": 1500
 }

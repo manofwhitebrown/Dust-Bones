@@ -11,7 +11,7 @@ const EFFECT_TYPES: Array[String] = [
 const CONFIG_KEYS: Array[String] = [
 	"reveal_threshold", "offline_cap_hours", "offline_efficiency", "autosave_seconds",
 	"pity", "rarity_weights", "cost_growth_default", "hardness_per_tier",
-	"offline_min_seconds", "offline_max_rolls", "auto_dig_max_rolls",
+	"offline_min_seconds", "offline_max_rolls", "auto_dig_max_rolls", "auto_dig_value_mult",
 ]
 const PRESTIGE_KEYS: Array[String] = ["k", "base", "exp", "per_fieldwork_income_mult", "min_lifetime_coins"]
 

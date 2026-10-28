@@ -1,8 +1,8 @@
 {
  "formula": "fieldwork = floor(k * (lifetime_coins / base)^exp)",
  "k": 1.0,
- "base": 1000000.0,
+ "base": 150000000.0,
  "exp": 0.5,
- "per_fieldwork_income_mult": 0.05,
- "min_lifetime_coins": 1000000.0
+ "per_fieldwork_income_mult": 0.25,
+ "min_lifetime_coins": 150000000.0
 }

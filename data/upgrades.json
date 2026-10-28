@@ -102,7 +102,7 @@
   "cost_growth": 3.0,
   "max_owned": 5,
   "effect_type": "rarity_luck",
-  "effect_value": 0.05,
+  "effect_value": 0.02,
   "requires": {}
  },
  {
@@ -114,7 +114,7 @@
   "cost_growth": 3.2,
   "max_owned": 5,
   "effect_type": "rarity_luck",
-  "effect_value": 0.08,
+  "effect_value": 0.03,
   "requires": {
    "item_id": "field_crew"
   }
@@ -128,7 +128,7 @@
   "cost_growth": 3.4,
   "max_owned": 4,
   "effect_type": "rarity_luck",
-  "effect_value": 0.12,
+  "effect_value": 0.04,
   "requires": {
    "fieldwork": 1
   }
@@ -170,7 +170,7 @@
   "cost_growth": 3.5,
   "max_owned": 3,
   "effect_type": "offline_efficiency_add",
-  "effect_value": 0.08,
+  "effect_value": 0.01,
   "requires": {
    "item_id": "field_crew"
   }
@@ -184,7 +184,7 @@
   "cost_growth": 4.0,
   "max_owned": 3,
   "effect_type": "offline_efficiency_add",
-  "effect_value": 0.12,
+  "effect_value": 0.02,
   "requires": {
    "fieldwork": 1
   }

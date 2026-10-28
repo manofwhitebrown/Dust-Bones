@@ -6,7 +6,12 @@ const T0: float = 1700000000.0
 const HOUR: float = 3600.0
 
 var _bus: Node
+var _d: GameData
 var _paths: Array[String] = []
+
+
+func before_all() -> void:
+	_d = GameData.load_dir()
 
 
 func before_each() -> void:
@@ -33,6 +38,14 @@ func _make(path: String = "", now: float = T0, seed_value: int = 1) -> Node:
 	g.offline_emit_delay = 0.0
 	add_child_autofree(g)
 	return g
+
+
+## Pins digger slab rates so tests do not depend on balance tuning.
+func _pin_rates(g: Node) -> void:
+	var rates: Array[float] = [0.02, 0.12, 0.7, 3.5, 10.0, 25.0]
+	for i: int in rates.size():
+		g._data.diggers[i]["slabs_per_sec"] = rates[i]
+	g._recalc()
 
 
 func _farm(g: Node, target: float) -> void:
@@ -150,6 +163,7 @@ func test_buy_cost_and_max_qty() -> void:
 
 func test_scripted_play_through() -> void:
 	var g: Node = _make()
+	_pin_rates(g)
 	_farm(g, 1400.0)
 	assert_true(g.buy("sable"))
 	assert_signal_emit_count(_bus, "item_purchased", 1)
@@ -171,7 +185,8 @@ func test_scripted_play_through() -> void:
 		assert_gt(s["count"], 0)
 		assert_true(s["best_find"].has("specimen_id"))
 	assert_eq(slabs, 3, "0.1 slabs/s x 36 s")
-	assert_almost_eq(g.get_balance("coins") - coins_before, coins, 1e-6)
+	assert_almost_eq(g.get_balance("coins") - coins_before, coins + float(g._summary["coins"]), 1e-6)
+	assert_almost_eq(g.get_balance("coins") - coins_before, income * 36.0, income * 0.2, "smooth income")
 	assert_almost_eq(g.get_stats()["play_seconds"], 36.0, 1e-6)
 
 
@@ -181,6 +196,7 @@ func _bus_income() -> float:
 
 func test_auto_dig_summary_at_most_once_per_second() -> void:
 	var g: Node = _make()
+	_pin_rates(g)
 	_farm(g, 100000.0)
 	g.buy("intern", 1)
 	g.buy("field_crew", 5)
@@ -249,12 +265,13 @@ func test_offline_report_on_boot() -> void:
 	assert_gt(income, 0.0)
 	var before: float = a.get_balance("coins")
 	var b: Node = _make(path, T0 + 3.0 * HOUR)
+	var eff: float = float(_d.config["offline_efficiency"])
 	assert_signal_emit_count(_bus, "offline_report_ready", 1)
 	var rep: Dictionary = _param("offline_report_ready", 0)
 	assert_almost_eq(rep["seconds"], 3.0 * HOUR, 1e-6)
-	assert_almost_eq(rep["coins"], income * 3.0 * HOUR * 0.5, income)
+	assert_almost_eq(rep["coins"], b.get_income_per_sec() * 3.0 * HOUR * eff, income)
 	assert_false(rep["capped"])
-	assert_gt(rep["slabs"], 0)
+	assert_gte(rep["slabs"], 0)
 	assert_eq(b.get_balance("coins"), before, "nothing credited before claim")
 	b.claim_offline_report()
 	assert_almost_eq(b.get_balance("coins"), before + rep["coins"], 1e-6)

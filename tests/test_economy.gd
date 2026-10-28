@@ -75,8 +75,9 @@ func test_income_and_brush_and_value() -> void:
 	var d: GameData = GameData.load_dir()
 	assert_eq(Economy.slabs_per_sec({}, d.diggers, 1.0), 0.0)
 	var owned: Dictionary = {"intern": 10, "field_crew": 2}
-	assert_almost_eq(Economy.slabs_per_sec(owned, d.diggers, 1.0), 0.2 + 0.24, 1e-12)
-	assert_almost_eq(Economy.slabs_per_sec(owned, d.diggers, 2.0), 0.88, 1e-12)
+	var base: float = 10.0 * float(d.diggers[0]["slabs_per_sec"]) + 2.0 * float(d.diggers[1]["slabs_per_sec"])
+	assert_almost_eq(Economy.slabs_per_sec(owned, d.diggers, 1.0), base, base * 1e-12)
+	assert_almost_eq(Economy.slabs_per_sec(owned, d.diggers, 2.0), base * 2.0, base * 1e-12)
 	assert_eq(Economy.slabs_per_sec(owned, d.diggers, -3.0), 0.0, "negative mult clamps")
 	assert_almost_eq(Economy.income_per_sec(2.0, 25.0, 1.5), 75.0, 1e-12)
 	assert_almost_eq(Economy.fieldwork_multiplier(10.0, 0.05), 1.5, 1e-12)

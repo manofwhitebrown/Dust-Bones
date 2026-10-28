@@ -59,6 +59,8 @@ var _fw_mult: float = 1.0
 var _luck: float = 0.0
 var _era_mult: Dictionary = {}
 var _slabs_ps: float = 0.0
+var _auto_value_mult: float = 1.0
+var _ev_auto: float = 0.0
 var _income: float = 0.0
 var _booted: bool = false
 
@@ -69,7 +71,7 @@ func _ready() -> void:
 
 func boot() -> void:
 	if bus == null:
-		bus = EventBus
+		bus = get_node("/root/EventBus")
 	_data = GameData.load_dir(data_dir)
 	var errs: Array[String] = _data.validate()
 	if not errs.is_empty():
@@ -141,9 +143,13 @@ func _tick(dt: float) -> void:
 		save_now()
 
 
+## Coins arrive smoothly (income x dt); slab rolls only decide discoveries and the best find.
 func _auto_dig(dt: float) -> void:
 	if _slabs_ps <= 0.0:
 		return
+	var coins: float = Economy.clamp_value(_income * dt)
+	_credit(coins)
+	_summary["coins"] += coins
 	_slab_frac += _slabs_ps * dt
 	var whole: float = floorf(_slab_frac)
 	if whole < 1.0:
@@ -152,20 +158,14 @@ func _auto_dig(dt: float) -> void:
 	_slab_frac = maxf(_slab_frac - whole, 0.0) if _slab_frac < MAX_COUNT else 0.0
 	var n: int = int(whole)
 	var res: Dictionary = _gen.roll_many(n, _luck, int(_data.config["auto_dig_max_rolls"]))
-	var scale: float = res["scale"]
-	var coins: float = 0.0
 	for id: String in res["counts"]:
 		var spec: Dictionary = _data.specimen_by_id[id]
-		var v: float = Economy.specimen_value(float(spec["base_value"]), _fw_mult, float(_era_mult.get(spec["era"], 1.0)))
-		coins += v * float(res["counts"][id]) * scale
+		var v: float = Economy.specimen_value(float(spec["base_value"]), _fw_mult * _auto_value_mult, float(_era_mult.get(spec["era"], 1.0)))
 		if _collection.discover(id):
 			_summary["new"].append(id)
 			bus.specimen_discovered.emit(id)
 		_consider_best(spec, v)
-	coins = Economy.clamp_value(coins)
-	_credit(coins)
 	_summary["count"] += n
-	_summary["coins"] += coins
 
 
 func _consider_best(spec: Dictionary, value: float) -> void:
@@ -178,7 +178,7 @@ func _consider_best(spec: Dictionary, value: float) -> void:
 func _flush_summary() -> void:
 	_summary_t = 0.0
 	if int(_summary["count"]) <= 0:
-		return
+		return  # coins keep accumulating until a summary with a find can be emitted
 	var best: Dictionary = _summary["best"]
 	var spec: Dictionary = best["spec"]
 	bus.auto_dig_tick.emit({
@@ -384,7 +384,7 @@ func _effect_text(entry: Dictionary) -> String:
 		"brush":
 			return "Brush size x%s" % NumFormat.fmt(float(def["brush_power"]))
 		"digger":
-			return "+%s slabs/sec each" % NumFormat.fmt(float(def["slabs_per_sec"]))
+			return "+%s coins/sec each" % NumFormat.fmt(float(def["slabs_per_sec"]) * _speed_mult * _ev_auto)
 	var v: float = float(def["effect_value"])
 	var pct: String = NumFormat.fmt(v * 100.0)
 	match def["effect_type"]:
@@ -415,9 +415,10 @@ func _recalc() -> void:
 	for era: String in _eras:
 		_era_mult[era] = Economy.upgrade_multiplier(_owned, ups, "value_mult_era", era)
 	_slabs_ps = Economy.slabs_per_sec(_owned, _data.diggers, _speed_mult)
-	var expected: float = _gen.expected_value(_luck, 1.0, _era_mult)
+	_auto_value_mult = float(_data.config["auto_dig_value_mult"])
+	_ev_auto = _gen.expected_value(_luck, _fw_mult * _auto_value_mult, _era_mult)
 	var old: float = _income
-	_income = Economy.income_per_sec(_slabs_ps, expected, _fw_mult)
+	_income = Economy.income_per_sec(_slabs_ps, _ev_auto, 1.0)
 	if not is_equal_approx(old, _income):
 		bus.income_changed.emit(_income)
 
