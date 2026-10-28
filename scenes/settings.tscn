@@ -1,0 +1,101 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/settings_view.gd" id="1_set"]
+[ext_resource type="Script" path="res://src/ui/hold_button.gd" id="2_hold"]
+
+[node name="Settings" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_set")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.231, 0.141, 0.09, 0.6)
+
+[node name="Sheet" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Box" type="VBoxContainer" parent="Sheet"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Sheet/Box"]
+layout_mode = 2
+theme_type_variation = &"Heading"
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="Sound" type="CheckButton" parent="Sheet/Box"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+focus_mode = 0
+text = "Sound effects"
+
+[node name="Music" type="CheckButton" parent="Sheet/Box"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+focus_mode = 0
+text = "Music"
+
+[node name="Haptics" type="CheckButton" parent="Sheet/Box"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+focus_mode = 0
+text = "Vibration"
+
+[node name="Erase" type="Button" parent="Sheet/Box"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+focus_mode = 0
+text = "Erase progress..."
+
+[node name="ConfirmBox" type="VBoxContainer" parent="Sheet/Box"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Warn" type="Label" parent="Sheet/Box/ConfirmBox"]
+layout_mode = 2
+text = "This deletes everything and cannot be undone."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Hold" type="Button" parent="Sheet/Box/ConfirmBox"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+text = "Hold to erase"
+script = ExtResource("2_hold")
+
+[node name="Cancel" type="Button" parent="Sheet/Box/ConfirmBox"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+focus_mode = 0
+text = "Cancel"
+
+[node name="Version" type="Label" parent="Sheet/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.3, 0.24, 1)
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Close" type="Button" parent="Sheet/Box"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+focus_mode = 0
+text = "Close"

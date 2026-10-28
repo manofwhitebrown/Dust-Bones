@@ -2,6 +2,8 @@ class_name Hud
 extends PanelContainer
 ## Coins, income/sec and (when > 0) fieldwork. Signal-driven; never polls.
 
+signal settings_requested
+
 const BASE_MARGIN_TOP: float = 20.0
 const FLASH_COLOR: Color = Color("#C0643C")
 const FLASH_TIME: float = 0.5
@@ -20,6 +22,9 @@ func _ready() -> void:
 	EventBus.currency_changed.connect(_on_currency)
 	EventBus.income_changed.connect(_on_income)
 	EventBus.item_purchased.connect(_on_item_purchased)
+	$Margin/Row/Settings.pressed.connect(func() -> void:
+		Sfx.play(&"ui_tap")
+		settings_requested.emit())
 	_on_currency("coins", GameState.get_balance("coins"), true)
 	_on_currency("fieldwork", GameState.get_balance("fieldwork"), true)
 	_income.set_value(GameState.get_income_per_sec(), true)

@@ -11,6 +11,7 @@ const SLIDE_TIME: float = 0.35
 const REVEAL_BEAT: float = 0.9 # pause on the revealed fossil before the next slab
 const HINT_IDLE_SEC: float = 5.0
 const BACKDROP_FADE: float = 0.6
+const HINT_KEY: String = "tut_brush"
 
 var reveal_beat: float = REVEAL_BEAT
 
@@ -19,7 +20,7 @@ var _spare: DirtSlab
 var _home: Vector2 = Vector2.ZERO
 var _busy: bool = false
 var _first_slab_id: int = -1
-var _hint_done: bool = false
+var _hint_done: bool = SettingsStore.get_bool(HINT_KEY, false)
 var _slab_tween: Tween
 var _backdrop_tween: Tween
 
@@ -37,6 +38,8 @@ func _ready() -> void:
 		s.visible = false
 		s.touched.connect(_on_touched)
 		s.progress_reported.connect(_on_progress_reported)
+		s.stroke_moved.connect(Sfx.brush_move)
+		s.stroke_ended.connect(Sfx.brush_stop)
 	_active = _slab_a
 	_spare = _slab_b
 	resized.connect(_layout)
@@ -44,6 +47,7 @@ func _ready() -> void:
 	EventBus.slab_revealed.connect(_on_slab_revealed)
 	EventBus.item_purchased.connect(_on_item_purchased)
 	EventBus.site_changed.connect(_on_site_changed)
+	EventBus.prestige_done.connect(_on_prestige_done)
 	_backdrop.color = _site_bg(GameState.get_current_site())
 	_hint_timer.one_shot = true
 	_hint_timer.wait_time = HINT_IDLE_SEC
@@ -53,7 +57,8 @@ func _ready() -> void:
 	_active.setup(data, GameState.get_brush_power())
 	_active.position = _home
 	_active.visible = true
-	_hint_timer.start()
+	if not _hint_done:
+		_hint_timer.start()
 
 
 func get_active_slab() -> DirtSlab:
@@ -78,6 +83,8 @@ func _on_site_changed(site: Dictionary) -> void:
 
 
 func _on_touched() -> void:
+	if not _hint_done:
+		SettingsStore.set_bool(HINT_KEY, true)
 	_hint_done = true
 	_hint_timer.stop()
 	_hint.stop()
@@ -135,3 +142,15 @@ func _on_slide_done(incoming: DirtSlab, outgoing: DirtSlab) -> void:
 	_spare = outgoing
 	_active.set_input_enabled(true)
 	_busy = false
+
+
+func _on_prestige_done(_info: Dictionary) -> void:
+	# Core reset everything: abandon any reveal in flight and start a clean slab in place.
+	if _slab_tween != null:
+		_slab_tween.kill()
+	_busy = false
+	_spare.visible = false
+	var data: Dictionary = GameState.start_new_slab()
+	_active.setup(data, GameState.get_brush_power())
+	_active.position = _home
+	_active.visible = true

@@ -106,6 +106,7 @@ func _on_popped(result: Dictionary, slab: DirtSlab) -> void:
 	var cfg: Dictionary = _cfg(rarity)
 	var col: Color = Palette.rarity_color(rarity)
 	var center: Vector2 = slab.global_position - global_position + slab.size * 0.5
+	Sfx.reveal(rarity)
 	_burst(center, int(cfg["puff"]), col.lightened(float(cfg["bright"])))
 	_show_card(result, slab, col)
 	_fly_coins(center, int(cfg["coins"]))
@@ -285,7 +286,19 @@ func _fly_coins(center: Vector2, count: int) -> void:
 		tw.tween_property(c, "position", target, COIN_FLY_TIME) \
 				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 		tw.parallel().tween_property(c, "scale", Vector2.ONE * 0.5, COIN_FLY_TIME)
-		tw.tween_callback(c.hide)
+		tw.tween_callback(_coin_landed.bind(c))
+
+
+## Coin shower for the offline "Collect" button (center is in global coordinates).
+func play_collect(center_global: Vector2) -> void:
+	_fly_coins(center_global - global_position, COIN_POOL)
+	_play_shower(Palette.ACCENT, SHOWER_MAX)
+	Haptics.pulse(30)
+
+
+func _coin_landed(c: Panel) -> void:
+	c.hide()
+	Sfx.coin_tick()
 
 
 func _play_slowmo(real_seconds: float) -> void:

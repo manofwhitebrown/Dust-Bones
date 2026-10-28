@@ -30,7 +30,9 @@ func _ready() -> void:
 		b.custom_minimum_size = Vector2(0.0, BUTTON_H)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.focus_mode = Control.FOCUS_NONE
-		b.pressed.connect(func() -> void: tab_selected.emit(tab))
+		b.pressed.connect(func() -> void:
+			Sfx.play(&"ui_tap")
+			tab_selected.emit(tab))
 		_row.add_child(b)
 		_buttons[tab] = b
 	(_buttons[&"dig"] as Button).button_pressed = true
@@ -77,3 +79,7 @@ func pulse(tab: StringName) -> void:
 	var tw: Tween = create_tween()
 	tw.tween_property(b, "scale", Vector2.ONE * PULSE_SCALE, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.tween_property(b, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func get_tab_rect(tab: StringName) -> Rect2:
+	return (_buttons[tab] as Button).get_global_rect()

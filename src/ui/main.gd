@@ -3,15 +3,21 @@ extends Control
 
 const TAB_DIG: StringName = &"dig"
 const MUSEUM_SCENE: PackedScene = preload("res://scenes/museum_view.tscn")
+const PRESTIGE_SCENE: PackedScene = preload("res://scenes/prestige_view.tscn")
 const SHOP_SCENE: PackedScene = preload("res://scenes/shop_view.tscn")
 
 var _views: Dictionary = {} # tab -> Control (non-dig tabs live under $Views)
+var _tab: StringName = TAB_DIG
 
 @onready var _dig: DigView = $DigView
 @onready var _fx: Juice = $DigView/RevealFX
 @onready var _view_host: Control = $Views
 @onready var _hud: Hud = $HUD
 @onready var _nav: NavBar = $NavBar
+@onready var _tutorial: Tutorial = $Tutorial
+@onready var _settings: SettingsView = $Settings
+@onready var _popup: OfflinePopup = $OfflinePopup
+@onready var _transition: PrestigeTransition = $PrestigeTransition
 
 
 func _ready() -> void:
@@ -25,7 +31,12 @@ func _ready() -> void:
 	_dig.reveal_started.connect(_on_reveal_started)
 	register_view(&"shop", SHOP_SCENE.instantiate() as Control)
 	register_view(&"museum", MUSEUM_SCENE.instantiate() as Control)
-	register_view(&"prestige", PlaceholderView.new().setup("Prestige"))
+	register_view(&"prestige", PRESTIGE_SCENE.instantiate() as Control)
+	_hud.settings_requested.connect(_settings.open)
+	_popup.collected.connect(_on_collected)
+	_transition.covered.connect(_nav.select.bind(TAB_DIG))
+	_tutorial.setup(_nav)
+	get_tree().quit_on_go_back = false
 	_apply_insets()
 	_show_tab(TAB_DIG)
 
@@ -39,6 +50,7 @@ func register_view(tab: StringName, view: Control) -> void:
 
 
 func _show_tab(tab: StringName) -> void:
+	_tab = tab
 	_dig.visible = tab == TAB_DIG
 	_view_host.visible = tab != TAB_DIG
 	for t: StringName in _views:
@@ -58,3 +70,26 @@ func _apply_insets() -> void:
 func _update_view_rect() -> void:
 	_view_host.offset_top = _hud.size.y
 	_view_host.offset_bottom = -_nav.size.y
+
+
+func _on_collected(center_global: Vector2) -> void:
+	if _tab != TAB_DIG:
+		_nav.select(TAB_DIG) # so the coin shower is visible
+	_fx.coin_target_global = _hud.get_coin_anchor()
+	_fx.play_collect(center_global)
+
+
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
+		return
+	var museum: MuseumView = _views.get(&"museum") as MuseumView
+	if _settings.visible:
+		_settings.close()
+	elif _popup.is_open():
+		return
+	elif museum != null and museum.is_detail_open():
+		museum.close_detail()
+	elif _tab != TAB_DIG:
+		_nav.select(TAB_DIG)
+	else:
+		get_tree().quit()

@@ -91,3 +91,11 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 44
 text = "0"
 script = ExtResource("2_tick")
+
+[node name="Settings" type="Button" parent="Margin/Row"]
+custom_minimum_size = Vector2(190, 128)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+theme_override_font_sizes/font_size = 34
+text = "Settings"

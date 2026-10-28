@@ -5,6 +5,10 @@
 [ext_resource type="PackedScene" path="res://scenes/dig_view.tscn" id="3_dig"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
 [ext_resource type="PackedScene" path="res://scenes/nav_bar.tscn" id="5_nav"]
+[ext_resource type="Script" path="res://src/ui/tutorial.gd" id="6_tut"]
+[ext_resource type="PackedScene" path="res://scenes/settings.tscn" id="7_set"]
+[ext_resource type="Script" path="res://src/ui/offline_popup.gd" id="8_pop"]
+[ext_resource type="Script" path="res://src/ui/prestige_transition.gd" id="9_trans"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -42,3 +46,28 @@ layout_mode = 1
 
 [node name="NavBar" parent="." instance=ExtResource("5_nav")]
 layout_mode = 1
+
+[node name="Tutorial" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("6_tut")
+
+[node name="Settings" parent="." instance=ExtResource("7_set")]
+layout_mode = 1
+
+[node name="OfflinePopup" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("8_pop")
+
+[node name="PrestigeTransition" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("9_trans")

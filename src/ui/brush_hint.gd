@@ -8,6 +8,7 @@ const SWIPE_TIME: float = 0.9
 const PULSE_TIME: float = 0.6
 
 var _tween: Tween
+var _caption: Label
 
 
 func _ready() -> void:
@@ -15,6 +16,15 @@ func _ready() -> void:
 	custom_minimum_size = Vector2.ONE * RADIUS * 2.0
 	size = custom_minimum_size
 	pivot_offset = size * 0.5
+	_caption = Label.new()
+	_caption.text = "Swipe to brush!"
+	_caption.add_theme_font_size_override("font_size", 40)
+	_caption.add_theme_color_override("font_color", Palette.UMBER)
+	_caption.add_theme_color_override("font_outline_color", Palette.BONE)
+	_caption.add_theme_constant_override("outline_size", 10)
+	_caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_caption.position = Vector2(-60.0, RADIUS * 2.0 + 8.0)
+	add_child(_caption)
 	visible = false
 
 
