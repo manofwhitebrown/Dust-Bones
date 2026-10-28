@@ -1,0 +1,86 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/juice.gd" id="1_juice"]
+[ext_resource type="Script" path="res://src/ui/fx_shape.gd" id="2_shape"]
+
+[sub_resource type="StyleBoxFlat" id="Style_badge"]
+bg_color = Color(0.753, 0.392, 0.235, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+content_margin_left = 28.0
+content_margin_top = 10.0
+content_margin_right = 28.0
+content_margin_bottom = 10.0
+
+[node name="RevealFX" type="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_juice")
+
+[node name="Flash" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Rays" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1700.0
+offset_bottom = 1700.0
+mouse_filter = 2
+script = ExtResource("2_shape")
+kind = 1
+
+[node name="Ring" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 760.0
+offset_bottom = 760.0
+mouse_filter = 2
+script = ExtResource("2_shape")
+
+[node name="Card" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 0
+offset_right = 960.0
+mouse_filter = 2
+
+[node name="Name" type="Label" parent="Card"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.231, 0.141, 0.09, 1)
+theme_override_font_sizes/font_size = 64
+horizontal_alignment = 1
+
+[node name="Info" type="Label" parent="Card"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 38
+horizontal_alignment = 1
+
+[node name="Badge" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_right = 190.0
+offset_bottom = 76.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.918, 0.875, 0.784, 1)
+theme_override_font_sizes/font_size = 44
+theme_override_styles/normal = SubResource("Style_badge")
+text = "NEW!"
+horizontal_alignment = 1
+vertical_alignment = 1
