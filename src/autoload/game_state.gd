@@ -1,226 +1,589 @@
 extends Node
-## PHASE 0 STUB: fake data + fake signals so the UI can be built against the
-## frozen contract (docs/CONTRACT.md). Replaced by the real core in M2.
+## Thin facade over src/core/*: owns the tick loop, save/lifecycle and EventBus emissions.
+## Prestige (preview/do_prestige) is a placeholder until M3.
 
-const REVEAL_THRESHOLD: float = 0.85
-const TICK_SECONDS: float = 1.0
-const OFFLINE_REPORT_DELAY: float = 2.0
-const STUB_INCOME: float = 12.5
-const STUB_BRUSH_POWER: float = 1.0
-const RARITIES: Array[String] = ["common", "rare", "legendary"]
-const CATEGORIES: Array[String] = ["brush", "digger", "upgrade"]
-const SITE: Dictionary = {"id": "dry_creek", "name": "Dry Creek", "bg_tint": "#c9a66b", "rock_tint": "#8a6f4d"}
-const NEXT_SITE: Dictionary = {"id": "salt_flats", "name": "Salt Flats", "bg_tint": "#e8e2d0", "rock_tint": "#b9b09a"}
-const SPECIMENS: Array[Dictionary] = [
-	{"id": "trilobite", "name": "Trilobite", "era": "Cambrian", "rarity": "common", "value": 10.0, "fact": "Trilobites ruled the seas for about 270 million years."},
-	{"id": "brachiopod", "name": "Brachiopod", "era": "Ordovician", "rarity": "common", "value": 11.0, "fact": "Brachiopods look like clams but are an unrelated group."},
-	{"id": "crinoid", "name": "Crinoid Stem", "era": "Ordovician", "rarity": "common", "value": 12.0, "fact": "Crinoids are animals, often called sea lilies."},
-	{"id": "horn_coral", "name": "Horn Coral", "era": "Devonian", "rarity": "common", "value": 13.0, "fact": "Rugose corals grew in a horn shape on ancient seabeds."},
-	{"id": "ammonite", "name": "Ammonite", "era": "Jurassic", "rarity": "common", "value": 14.0, "fact": "Ammonites were shelled cephalopods related to squid."},
-	{"id": "fish_scale", "name": "Fish Scale", "era": "Devonian", "rarity": "common", "value": 15.0, "fact": "Early fish wore bony armor in the form of scales."},
-	{"id": "orthocone", "name": "Orthocone", "era": "Ordovician", "rarity": "rare", "value": 100.0, "fact": "Orthocones were straight-shelled cephalopods."},
-	{"id": "eurypterid", "name": "Eurypterid", "era": "Silurian", "rarity": "rare", "value": 110.0, "fact": "Sea scorpions were among the largest arthropods ever."},
-	{"id": "belemnite", "name": "Belemnite", "era": "Jurassic", "rarity": "rare", "value": 120.0, "fact": "Belemnites were squid-like animals with a bullet-shaped guard."},
-	{"id": "shark_tooth", "name": "Shark Tooth", "era": "Cretaceous", "rarity": "rare", "value": 130.0, "fact": "Sharks shed thousands of teeth over a lifetime."},
-	{"id": "dunkleosteus", "name": "Dunkleosteus Plate", "era": "Devonian", "rarity": "legendary", "value": 1000.0, "fact": "Dunkleosteus was an armored fish with bony shearing plates."},
-	{"id": "archaeopteryx", "name": "Archaeopteryx Feather", "era": "Jurassic", "rarity": "legendary", "value": 1200.0, "fact": "Archaeopteryx had feathers and also reptile-like teeth."},
-]
+const EventBusType: GDScript = preload("res://src/autoload/event_bus.gd")
 
-var _coins: float = 100.0
+const CURRENCY_COINS: String = "coins"
+const CURRENCY_FIELDWORK: String = "fieldwork"
+const TICK_DT: float = 0.1
+const SUMMARY_INTERVAL: float = 1.0
+const CURRENCY_EMIT_INTERVAL: float = 0.1
+const MAX_TICKS_PER_CALL: int = 600
+const MAX_FRAME_DELTA: float = 5.0
+const MAX_ACTIVE_SLABS: int = 8
+const MAX_COUNT: float = 4.0e18
+const EPS: float = 1e-9
+const DEFAULT_OFFLINE_EMIT_DELAY: float = 0.5
+
+# Injection points (tests, simulator). Defaults are production values.
+var bus: EventBusType = null
+var save_path: String = "user://save.json"
+var data_dir: String = GameData.DATA_DIR
+var rng_seed: int = 0  # 0 = randomize
+var now_unix: float = -1.0  # >= 0 overrides the wall clock
+var offline_emit_delay: float = DEFAULT_OFFLINE_EMIT_DELAY
+
+var _data: GameData
+var _rng: RandomNumberGenerator
+var _gen: SlabGenerator
+var _collection: Collection
+var _save: SaveSystem
+var _eras: Array[String] = []
+
+var _coins: float = 0.0
 var _fieldwork: float = 0.0
-var _slab_counter: int = 0
-var _slabs: Dictionary = {}
-var _discovered: Dictionary = {}
-var _owned: Dictionary = {}
-var _reveal_count: int = 0
+var _total_coins: float = 0.0
 var _slabs_dug: int = 0
 var _play_seconds: float = 0.0
-var _total_coins: float = 100.0
+var _owned: Dictionary = {}
+var _site_id: String = ""
+var _next_slab_id: int = 0
+var _slab_frac: float = 0.0
 var _pending_offline: Dictionary = {}
+var _last_active: float = 0.0
+
+var _active: Dictionary = {}
+var _acc: float = 0.0
+var _clock_s: float = 0.0
+var _summary_t: float = 0.0
+var _autosave_t: float = 0.0
+var _last_emit: Dictionary = {}
+var _dirty: Dictionary = {}
+var _summary: Dictionary = {}
+
+var _speed_mult: float = 1.0
+var _click_mult: float = 1.0
+var _fw_mult: float = 1.0
+var _luck: float = 0.0
+var _era_mult: Dictionary = {}
+var _slabs_ps: float = 0.0
+var _income: float = 0.0
+var _booted: bool = false
 
 
 func _ready() -> void:
-	var timer: Timer = Timer.new()
-	timer.wait_time = TICK_SECONDS
-	timer.autostart = true
-	timer.timeout.connect(_on_tick)
-	add_child(timer)
-	get_tree().create_timer(OFFLINE_REPORT_DELAY).timeout.connect(_emit_fake_offline)
+	boot()
 
 
-func _on_tick() -> void:
-	_coins += STUB_INCOME
-	_total_coins += STUB_INCOME
-	_play_seconds += TICK_SECONDS
-	EventBus.currency_changed.emit("coins", _coins)
-	EventBus.income_changed.emit(STUB_INCOME)
+func boot() -> void:
+	if bus == null:
+		bus = EventBus
+	_data = GameData.load_dir(data_dir)
+	var errs: Array[String] = _data.validate()
+	if not errs.is_empty():
+		push_error("Data validation failed: %s" % str(errs))
+	_rng = RandomNumberGenerator.new()
+	if rng_seed != 0:
+		_rng.seed = rng_seed
+	else:
+		_rng.randomize()
+	_save = SaveSystem.new(save_path)
+	for s: Dictionary in _data.specimens:
+		if not _eras.has(s["era"]):
+			_eras.append(s["era"])
+	_new_game()
+	var saved: Dictionary = _save.load_game()
+	var pity: Dictionary = {}
+	if not saved.is_empty():
+		pity = _apply_state(saved)
+	_build_generator(pity)
+	_recalc()
+	_booted = true
+	check_offline()
 
 
-func _emit_fake_offline() -> void:
-	_pending_offline = {"seconds": 10800.0, "coins": 5000.0, "slabs": 120, "new_discoveries": ["eurypterid"], "capped": false}
-	EventBus.offline_report_ready.emit(_pending_offline)
+func _process(delta: float) -> void:
+	if _booted:
+		advance(minf(delta, MAX_FRAME_DELTA))
+
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_WM_CLOSE_REQUEST:
+			save_now()
+		NOTIFICATION_APPLICATION_RESUMED:
+			if _booted:
+				check_offline()
+
+
+# ---------------------------------------------------------------- tick loop
+
+## Advances game time. _process calls this; tests and the simulator call it directly.
+func advance(delta: float) -> void:
+	if not _booted or is_nan(delta) or delta <= 0.0:
+		return
+	_acc += delta
+	var ticks: int = 0
+	while _acc >= TICK_DT - EPS and ticks < MAX_TICKS_PER_CALL:
+		_acc = maxf(_acc - TICK_DT, 0.0)
+		_tick(TICK_DT)
+		ticks += 1
+	if _acc >= TICK_DT - EPS:  # huge delta: one coarse step instead of unbounded work
+		var rest: float = _acc
+		_acc = 0.0
+		_tick(rest)
+
+
+func _tick(dt: float) -> void:
+	_clock_s += dt
+	_play_seconds += dt
+	_auto_dig(dt)
+	_summary_t += dt
+	if _summary_t >= SUMMARY_INTERVAL - EPS:
+		_flush_summary()
+	_flush_currency()
+	_autosave_t += dt
+	if _autosave_t >= float(_data.config["autosave_seconds"]):
+		save_now()
+
+
+func _auto_dig(dt: float) -> void:
+	if _slabs_ps <= 0.0:
+		return
+	_slab_frac += _slabs_ps * dt
+	var whole: float = floorf(_slab_frac)
+	if whole < 1.0:
+		return
+	whole = minf(whole, MAX_COUNT)
+	_slab_frac = maxf(_slab_frac - whole, 0.0) if _slab_frac < MAX_COUNT else 0.0
+	var n: int = int(whole)
+	var res: Dictionary = _gen.roll_many(n, _luck, int(_data.config["auto_dig_max_rolls"]))
+	var scale: float = res["scale"]
+	var coins: float = 0.0
+	for id: String in res["counts"]:
+		var spec: Dictionary = _data.specimen_by_id[id]
+		var v: float = Economy.specimen_value(float(spec["base_value"]), _fw_mult, float(_era_mult.get(spec["era"], 1.0)))
+		coins += v * float(res["counts"][id]) * scale
+		if _collection.discover(id):
+			_summary["new"].append(id)
+			bus.specimen_discovered.emit(id)
+		_consider_best(spec, v)
+	coins = Economy.clamp_value(coins)
+	_credit(coins)
+	_summary["count"] += n
+	_summary["coins"] += coins
+
+
+func _consider_best(spec: Dictionary, value: float) -> void:
+	var best: Dictionary = _summary["best"]
+	var rank: int = GameData.RARITIES.find(spec["rarity"])
+	if best.is_empty() or rank > int(best["rank"]) or (rank == int(best["rank"]) and value > float(best["value"])):
+		_summary["best"] = {"rank": rank, "spec": spec, "value": value}
+
+
+func _flush_summary() -> void:
+	_summary_t = 0.0
+	if int(_summary["count"]) <= 0:
+		return
+	var best: Dictionary = _summary["best"]
+	var spec: Dictionary = best["spec"]
+	bus.auto_dig_tick.emit({
+		"count": _summary["count"], "coins": _summary["coins"],
+		"best_find": {
+			"slab_id": -1, "specimen_id": spec["id"], "name": spec["name"], "rarity": spec["rarity"],
+			"era": spec["era"], "value": best["value"], "is_new": (_summary["new"] as Array).has(spec["id"]),
+		},
+		"new_discoveries": (_summary["new"] as Array).duplicate(),
+	})
+	_reset_summary()
+
+
+func _reset_summary() -> void:
+	_summary = {"count": 0, "coins": 0.0, "best": {}, "new": []}
+
+
+# ---------------------------------------------------------------- currency
+
+func _credit(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	_coins = Economy.clamp_value(_coins + amount)
+	_total_coins = Economy.clamp_value(_total_coins + amount)
+	_touch(CURRENCY_COINS)
+
+
+## Throttled to <= 10 emissions/s per currency; deferred ones flush on the next tick.
+func _touch(currency: String) -> void:
+	if _clock_s - float(_last_emit.get(currency, -INF)) >= CURRENCY_EMIT_INTERVAL - EPS:
+		_last_emit[currency] = _clock_s
+		_dirty.erase(currency)
+		bus.currency_changed.emit(currency, get_balance(currency))
+	else:
+		_dirty[currency] = true
+
+
+func _flush_currency() -> void:
+	for c: String in _dirty.keys():
+		_touch(c)
 
 
 func get_balance(currency: String) -> float:
-	return _fieldwork if currency == "fieldwork" else _coins
+	match currency:
+		CURRENCY_COINS:
+			return _coins
+		CURRENCY_FIELDWORK:
+			return _fieldwork
+	return 0.0
 
 
 func get_income_per_sec() -> float:
-	return STUB_INCOME
+	return _income
 
 
 func get_brush_power() -> float:
-	return STUB_BRUSH_POWER
+	return Economy.brush_power(_owned, _data.tools)
 
 
 func get_current_site() -> Dictionary:
-	return SITE.duplicate()
+	var s: Dictionary = _data.site_by_id[_site_id]
+	return {"id": s["id"], "name": s["name"], "bg_tint": s["bg_tint"], "rock_tint": s["rock_tint"]}
 
+
+# ---------------------------------------------------------------- slabs
 
 func start_new_slab() -> Dictionary:
-	_slab_counter += 1
-	var spec: Dictionary = SPECIMENS[_slab_counter % SPECIMENS.size()]
+	var roll: Dictionary = _gen.roll(_luck)
+	var spec: Dictionary = roll["specimen"]
+	_next_slab_id += 1
 	var slab: Dictionary = {
-		"id": _slab_counter,
-		"specimen_id": spec["id"],
-		"rarity": spec["rarity"],
-		"hardness": 1.0 + float(RARITIES.find(spec["rarity"])) * 0.15,
-		"reveal_threshold": REVEAL_THRESHOLD,
-		"rock_tint": SITE["rock_tint"],
+		"id": _next_slab_id, "specimen_id": spec["id"], "rarity": roll["rarity"],
+		"hardness": roll["hardness"], "reveal_threshold": float(_data.config["reveal_threshold"]),
+		"rock_tint": _data.site_by_id[_site_id]["rock_tint"],
 	}
-	_slabs[_slab_counter] = {"specimen": spec, "revealed": false}
-	EventBus.slab_started.emit(slab)
+	_active[_next_slab_id] = spec
+	while _active.size() > MAX_ACTIVE_SLABS:
+		_active.erase(_active.keys()[0])
+	bus.slab_started.emit(slab)
 	return slab
 
 
 func report_brush_progress(slab_id: int, fraction: float) -> void:
-	if not _slabs.has(slab_id):
+	if is_nan(fraction) or not _active.has(slab_id):
 		return
-	var entry: Dictionary = _slabs[slab_id]
-	if entry["revealed"] or fraction < REVEAL_THRESHOLD:
+	if fraction < float(_data.config["reveal_threshold"]):
 		return
-	entry["revealed"] = true
-	var spec: Dictionary = entry["specimen"]
-	_reveal_count += 1
+	var spec: Dictionary = _active[slab_id]
+	_active.erase(slab_id)  # finished: later duplicate reports are ignored
+	var value: float = _manual_value(spec)
+	_credit(value)
 	_slabs_dug += 1
-	var is_new: bool = _reveal_count % 2 == 1
-	var value: float = spec["value"]
-	_coins += value
-	_total_coins += value
-	if is_new:
-		_discovered[spec["id"]] = true
-	EventBus.slab_revealed.emit({
-		"slab_id": slab_id, "specimen_id": spec["id"], "name": spec["name"],
-		"rarity": spec["rarity"], "era": spec["era"], "value": value, "is_new": is_new,
+	var is_new: bool = _collection.discover(spec["id"])
+	bus.slab_revealed.emit({
+		"slab_id": slab_id, "specimen_id": spec["id"], "name": spec["name"], "rarity": spec["rarity"],
+		"era": spec["era"], "value": value, "is_new": is_new,
 	})
 	if is_new:
-		EventBus.specimen_discovered.emit(spec["id"])
-	EventBus.currency_changed.emit("coins", _coins)
+		bus.specimen_discovered.emit(spec["id"])
 
 
-func _fake_items(category: String) -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for i: int in 3:
-		var id: String = "%s_%d" % [category, i + 1]
-		var cost: float = 50.0 * pow(6.0, i)
-		var owned: int = _owned.get(id, 0)
-		out.append({
-			"id": id, "category": category, "name": "%s %d" % [category.capitalize(), i + 1],
-			"desc": "Placeholder %s." % category, "icon": "",
-			"owned": owned, "max_owned": 1 if category == "brush" else -1,
-			"cost": cost, "affordable": _coins >= cost, "locked": i == 2,
-			"unlock_text": "Own %s_%d first" % [category, i + 1] if i == 2 else "",
-			"effect_text": "+%d%% placeholder effect" % ((i + 1) * 10),
-		})
-	return out
+func _manual_value(spec: Dictionary) -> float:
+	return Economy.specimen_value(float(spec["base_value"]), _click_mult * _fw_mult, float(_era_mult.get(spec["era"], 1.0)))
 
+
+# ---------------------------------------------------------------- shop
 
 func get_shop_items(category: String) -> Array[Dictionary]:
-	if not CATEGORIES.has(category):
-		return [] as Array[Dictionary]
-	return _fake_items(category)
+	var out: Array[Dictionary] = []
+	for id: String in _data.item_by_id:
+		var entry: Dictionary = _data.item_by_id[id]
+		if entry["category"] == category:
+			out.append(_shop_entry(id, entry))
+	return out
 
 
 func get_buy_cost(item_id: String, qty: int) -> float:
-	return 50.0 * float(maxi(qty, 1))
+	var entry: Dictionary = _data.item_by_id.get(item_id, {})
+	if entry.is_empty():
+		return 0.0
+	var def: Dictionary = entry["def"]
+	var owned: int = int(_owned.get(item_id, 0))
+	var room: int = _room(entry, owned)
+	var n: int = qty
+	if qty == -1:
+		n = maxi(Economy.max_affordable(float(def["base_cost"]), float(def["cost_growth"]), owned, _coins, room), 1)
+	if room >= 0:
+		n = mini(n, room)
+	return Economy.bulk_cost(float(def["base_cost"]), float(def["cost_growth"]), owned, n)
 
 
 func buy(item_id: String, qty: int = 1) -> bool:
-	var count: int = maxi(qty, 1)
-	_owned[item_id] = int(_owned.get(item_id, 0)) + count
-	EventBus.item_purchased.emit(item_id, _owned[item_id])
-	EventBus.currency_changed.emit("coins", _coins)
-	EventBus.income_changed.emit(STUB_INCOME)
+	var entry: Dictionary = _data.item_by_id.get(item_id, {})
+	if entry.is_empty() or qty == 0 or qty < -1:
+		return false
+	var def: Dictionary = entry["def"]
+	if _is_locked(def):
+		return false
+	var owned: int = int(_owned.get(item_id, 0))
+	var room: int = _room(entry, owned)
+	if room == 0 or (room > 0 and qty > room):
+		return false
+	var base: float = float(def["base_cost"])
+	var growth: float = float(def["cost_growth"])
+	var n: int = Economy.max_affordable(base, growth, owned, _coins, room) if qty == -1 else qty
+	if n <= 0:
+		return false
+	var total: float = Economy.bulk_cost(base, growth, owned, n)
+	if total > _coins:
+		return false
+	_coins = maxf(_coins - total, 0.0)
+	_owned[item_id] = owned + n
+	_recalc()
+	bus.item_purchased.emit(item_id, owned + n)
+	_touch(CURRENCY_COINS)
 	return true
 
 
-func _specimen_entry(spec: Dictionary) -> Dictionary:
-	var found: bool = _discovered.has(spec["id"])
+func _room(entry: Dictionary, owned: int) -> int:
+	var cap: int = _max_owned(entry)
+	return -1 if cap < 0 else maxi(cap - owned, 0)
+
+
+func _max_owned(entry: Dictionary) -> int:
+	if entry["category"] == "brush":
+		return 1
+	return int(entry["def"].get("max_owned", -1))
+
+
+func _is_locked(def: Dictionary) -> bool:
+	var req: Dictionary = def.get("requires", {})
+	if req.has("item_id") and int(_owned.get(req["item_id"], 0)) <= 0:
+		return true
+	return req.has("fieldwork") and _fieldwork < float(req["fieldwork"])
+
+
+func _unlock_text(def: Dictionary) -> String:
+	var req: Dictionary = def.get("requires", {})
+	var parts: Array[String] = []
+	if req.has("item_id") and int(_owned.get(req["item_id"], 0)) <= 0:
+		parts.append("Requires %s" % _data.item_by_id[req["item_id"]]["def"]["name"])
+	if req.has("fieldwork") and _fieldwork < float(req["fieldwork"]):
+		parts.append("Requires %s fieldwork" % NumFormat.fmt(float(req["fieldwork"])))
+	return ", ".join(parts)
+
+
+func _shop_entry(id: String, entry: Dictionary) -> Dictionary:
+	var def: Dictionary = entry["def"]
+	var owned: int = int(_owned.get(id, 0))
+	var room: int = _room(entry, owned)
+	var cost: float = Economy.cost(float(def["base_cost"]), float(def["cost_growth"]), owned)
+	var locked: bool = _is_locked(def)
 	return {
-		"id": spec["id"], "name": spec["name"] if found else "???", "era": spec["era"],
-		"rarity": spec["rarity"], "site": SITE["id"], "discovered": found,
-		"value": spec["value"], "fact": spec["fact"] if found else "",
+		"id": id, "category": entry["category"], "name": def["name"], "desc": def["desc"],
+		"icon": def.get("icon", id), "owned": owned, "max_owned": _max_owned(entry),
+		"cost": cost, "affordable": not locked and room != 0 and _coins >= cost,
+		"locked": locked, "unlock_text": _unlock_text(def), "effect_text": _effect_text(entry),
 	}
 
 
+func _effect_text(entry: Dictionary) -> String:
+	var def: Dictionary = entry["def"]
+	match entry["category"]:
+		"brush":
+			return "Brush size x%s" % NumFormat.fmt(float(def["brush_power"]))
+		"digger":
+			return "+%s slabs/sec each" % NumFormat.fmt(float(def["slabs_per_sec"]))
+	var v: float = float(def["effect_value"])
+	var pct: String = NumFormat.fmt(v * 100.0)
+	match def["effect_type"]:
+		"click_value_mult":
+			return "+%s%% brushing find value" % pct
+		"digger_speed_mult":
+			return "+%s%% digger speed" % pct
+		"rarity_luck":
+			return "+%s%% rare find luck" % pct
+		"offline_cap_hours_add":
+			return "+%s h offline time" % NumFormat.fmt(v)
+		"offline_efficiency_add":
+			return "+%s%% offline earnings" % pct
+		"value_mult_era":
+			return "+%s%% %s find value" % [pct, def.get("era", "")]
+		"fieldwork_gain_mult":
+			return "+%s%% fieldwork on prestige" % pct
+	return ""
+
+
+func _recalc() -> void:
+	var ups: Array[Dictionary] = _data.upgrades
+	_speed_mult = Economy.upgrade_multiplier(_owned, ups, "digger_speed_mult")
+	_click_mult = Economy.upgrade_multiplier(_owned, ups, "click_value_mult")
+	_luck = Economy.upgrade_bonus(_owned, ups, "rarity_luck")
+	_fw_mult = Economy.fieldwork_multiplier(_fieldwork, float(_data.prestige["per_fieldwork_income_mult"]))
+	_era_mult.clear()
+	for era: String in _eras:
+		_era_mult[era] = Economy.upgrade_multiplier(_owned, ups, "value_mult_era", era)
+	_slabs_ps = Economy.slabs_per_sec(_owned, _data.diggers, _speed_mult)
+	var expected: float = _gen.expected_value(_luck, 1.0, _era_mult)
+	var old: float = _income
+	_income = Economy.income_per_sec(_slabs_ps, expected, _fw_mult)
+	if not is_equal_approx(old, _income):
+		bus.income_changed.emit(_income)
+
+
+# ---------------------------------------------------------------- collection
+
 func get_collection(site_id: String = "") -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	if site_id != "" and site_id != SITE["id"]:
-		return out
-	for spec: Dictionary in SPECIMENS:
-		out.append(_specimen_entry(spec))
-	return out
+	return _collection.entries(site_id, _manual_value)
 
 
 func get_collection_progress() -> Dictionary:
-	var by_era: Dictionary = {}
-	for spec: Dictionary in SPECIMENS:
-		var era: String = spec["era"]
-		if not by_era.has(era):
-			by_era[era] = {"discovered": 0, "total": 0}
-		by_era[era]["total"] += 1
-		if _discovered.has(spec["id"]):
-			by_era[era]["discovered"] += 1
-	return {"discovered": _discovered.size(), "total": SPECIMENS.size(), "by_era": by_era}
+	return _collection.progress()
 
 
 func get_specimen(specimen_id: String) -> Dictionary:
-	for spec: Dictionary in SPECIMENS:
-		if spec["id"] == specimen_id:
-			return _specimen_entry(spec)
-	return {}
+	var s: Dictionary = _data.specimen_by_id.get(specimen_id, {})
+	return {} if s.is_empty() else _collection.entry(specimen_id, _manual_value(s))
+
+
+# ---------------------------------------------------------------- offline
+
+## Computes away-time earnings from the last save/active time. Called at boot and on app resume.
+func check_offline() -> void:
+	var now: float = _now()
+	var ups: Array[Dictionary] = _data.upgrades
+	var cap_h: float = float(_data.config["offline_cap_hours"]) + Economy.upgrade_bonus(_owned, ups, "offline_cap_hours_add")
+	var eff: float = float(_data.config["offline_efficiency"]) + Economy.upgrade_bonus(_owned, ups, "offline_efficiency_add")
+	var rep: Dictionary = Offline.compute(_last_active, now, _income, _slabs_ps, cap_h, eff, float(_data.config["offline_min_seconds"]))
+	_last_active = now  # also re-bases after clock tampering
+	if float(rep["seconds"]) <= 0.0:
+		return
+	var rolls: Dictionary = _gen.roll_many(int(rep["slabs"]), _luck, int(_data.config["offline_max_rolls"]))
+	if _pending_offline.is_empty():
+		_pending_offline = {"seconds": 0.0, "coins": 0.0, "slabs": 0, "new_discoveries": [], "capped": false}
+	_pending_offline["seconds"] += rep["seconds"]
+	_pending_offline["coins"] = Economy.clamp_value(float(_pending_offline["coins"]) + float(rep["coins"]))
+	_pending_offline["slabs"] += rep["slabs"]
+	_pending_offline["capped"] = bool(_pending_offline["capped"]) or bool(rep["capped"])
+	var found: Array = _pending_offline["new_discoveries"]
+	for id: String in rolls["counts"]:
+		if not _collection.is_discovered(id) and not found.has(id):
+			found.append(id)
+	if offline_emit_delay <= 0.0 or not is_inside_tree():
+		_emit_offline_report()
+	else:
+		get_tree().create_timer(offline_emit_delay).timeout.connect(_emit_offline_report)
+
+
+func _emit_offline_report() -> void:
+	if not _pending_offline.is_empty():
+		bus.offline_report_ready.emit(_pending_offline.duplicate(true))
 
 
 func claim_offline_report() -> void:
 	if _pending_offline.is_empty():
 		return
-	_coins += float(_pending_offline["coins"])
+	var rep: Dictionary = _pending_offline
 	_pending_offline = {}
-	EventBus.currency_changed.emit("coins", _coins)
+	_credit(float(rep["coins"]))
+	for id: String in rep["new_discoveries"]:
+		if _collection.discover(id):
+			bus.specimen_discovered.emit(id)
 
+
+# ---------------------------------------------------------------- prestige (M3 placeholder)
 
 func get_prestige_preview() -> Dictionary:
-	return {"can_prestige": true, "fieldwork_gain": 5.0, "bonus_text": "+25% income", "next_site": NEXT_SITE.duplicate()}
+	return {"can_prestige": false, "fieldwork_gain": 0.0, "bonus_text": "", "next_site": {}}
 
 
 func do_prestige() -> void:
-	_fieldwork += 5.0
-	EventBus.prestige_done.emit({"site_id": NEXT_SITE["id"], "fieldwork_gained": 5.0, "total_fieldwork": _fieldwork})
-	EventBus.site_changed.emit(NEXT_SITE.duplicate())
+	pass
 
+
+# ---------------------------------------------------------------- stats / save
 
 func get_stats() -> Dictionary:
 	return {"slabs_dug": _slabs_dug, "play_seconds": _play_seconds, "total_coins": _total_coins}
 
 
 func save_now() -> void:
-	EventBus.save_completed.emit()
+	if _save == null or not _booted:
+		return
+	_last_active = _now()
+	_autosave_t = 0.0
+	if _save.save(_build_state()):
+		bus.save_completed.emit()
 
 
 func reset_all_data() -> void:
-	_coins = 100.0
+	_save.delete_all()
+	_new_game()
+	_build_generator({})
+	_recalc()
+	_touch(CURRENCY_COINS)
+
+
+func _now() -> float:
+	return now_unix if now_unix >= 0.0 else Time.get_unix_time_from_system()
+
+
+func _new_game() -> void:
+	_coins = 0.0
 	_fieldwork = 0.0
-	_discovered.clear()
-	_owned.clear()
-	_slabs.clear()
-	EventBus.currency_changed.emit("coins", _coins)
+	_total_coins = 0.0
+	_slabs_dug = 0
+	_play_seconds = 0.0
+	_owned = {str(_data.tools[0]["id"]): 1}
+	_site_id = str(_data.sites_in_order()[0]["id"])
+	_next_slab_id = 0
+	_slab_frac = 0.0
+	_pending_offline = {}
+	_active.clear()
+	_collection = Collection.new(_data)
+	_last_active = _now()
+	_reset_summary()
+
+
+func _build_generator(pity: Dictionary) -> void:
+	_gen = SlabGenerator.new(_data.config, _data.specimens_for_site(_site_id), _rng)
+	if not pity.is_empty():
+		_gen.set_state(pity)
+
+
+func _build_state() -> Dictionary:
+	return {
+		"version": SaveSystem.CURRENT_VERSION, "saved_at": _last_active,
+		"coins": _coins, "fieldwork": _fieldwork, "total_coins": _total_coins,
+		"slabs_dug": _slabs_dug, "play_seconds": _play_seconds, "owned": _owned.duplicate(),
+		"discovered": _collection.to_array(), "site_id": _site_id, "next_slab_id": _next_slab_id,
+		"slab_frac": _slab_frac, "pity": _gen.get_state(), "pending_offline": _pending_offline.duplicate(true),
+	}
+
+
+## Applies a loaded save (tolerating bad values) and returns the saved pity state.
+func _apply_state(s: Dictionary) -> Dictionary:
+	_coins = _clean(s.get("coins", 0.0))
+	_fieldwork = _clean(s.get("fieldwork", 0.0))
+	_total_coins = maxf(_clean(s.get("total_coins", 0.0)), _coins)
+	_slabs_dug = maxi(int(s.get("slabs_dug", 0)), 0)
+	_play_seconds = _clean(s.get("play_seconds", 0.0))
+	_next_slab_id = maxi(int(s.get("next_slab_id", 0)), 0)
+	_slab_frac = minf(_clean(s.get("slab_frac", 0.0)), 1.0)
+	_last_active = float(s.get("saved_at", _now()))
+	var site: String = str(s.get("site_id", _site_id))
+	if _data.site_by_id.has(site):
+		_site_id = site
+	var owned: Variant = s.get("owned", {})
+	if owned is Dictionary:
+		for id: Variant in owned:
+			var entry: Dictionary = _data.item_by_id.get(str(id), {})
+			if entry.is_empty():
+				continue
+			var cap: int = _max_owned(entry)
+			var n: int = maxi(int(owned[id]), 0)
+			_owned[str(id)] = n if cap < 0 else mini(n, cap)
+	_collection.load_array(s.get("discovered", []) as Array)
+	var pending: Variant = s.get("pending_offline", {})
+	if pending is Dictionary and not (pending as Dictionary).is_empty():
+		_pending_offline = {
+			"seconds": _clean(pending.get("seconds", 0.0)), "coins": _clean(pending.get("coins", 0.0)),
+			"slabs": maxi(int(pending.get("slabs", 0)), 0), "capped": bool(pending.get("capped", false)),
+			"new_discoveries": (pending.get("new_discoveries", []) as Array).duplicate(),
+		}
+	var pity: Variant = s.get("pity", {})
+	return pity if pity is Dictionary else {}
+
+
+func _clean(x: Variant) -> float:
+	var f: float = float(x)
+	return 0.0 if (is_nan(f) or f < 0.0) else minf(f, Economy.MAX_VALUE)
