@@ -1,0 +1,75 @@
+name: Setup Godot
+description: Install pinned Godot (+ export templates and Android SDK pieces when android=true)
+inputs:
+  godot-version:
+    description: Godot stable version
+    default: "4.6.3"
+  android:
+    description: Also set up JDK, SDK packages, export templates
+    default: "false"
+  release:
+    description: Also install NDK/CMake needed for gradle (release) builds
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Cache Godot binary + templates
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/godot-bin
+          ~/.local/share/godot/export_templates
+        key: godot-${{ inputs.godot-version }}-${{ inputs.android }}
+
+    - name: Install Godot
+      shell: bash
+      run: |
+        set -euo pipefail
+        V="${{ inputs.godot-version }}"
+        BASE="https://github.com/godotengine/godot-builds/releases/download/${V}-stable"
+        if [ ! -x "$HOME/godot-bin/godot" ]; then
+          mkdir -p "$HOME/godot-bin"
+          curl -fsSL "$BASE/Godot_v${V}-stable_linux.x86_64.zip" -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          mv /tmp/godot/Godot_v${V}-stable_linux.x86_64 "$HOME/godot-bin/godot"
+          chmod +x "$HOME/godot-bin/godot"
+        fi
+        echo "$HOME/godot-bin" >> "$GITHUB_PATH"
+        if [ "${{ inputs.android }}" = "true" ]; then
+          T="$HOME/.local/share/godot/export_templates/${V}.stable"
+          if [ ! -f "$T/version.txt" ]; then
+            curl -fsSL "$BASE/Godot_v${V}-stable_export_templates.tpz" -o /tmp/tpl.zip
+            unzip -q /tmp/tpl.zip -d /tmp/tpl
+            mkdir -p "$T" && mv /tmp/tpl/templates/* "$T/"
+          fi
+        fi
+
+    - name: Setup JDK 17
+      if: inputs.android == 'true'
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Android SDK packages
+      if: inputs.android == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+        PKGS=("platform-tools" "build-tools;35.0.1" "platforms;android-35")
+        if [ "${{ inputs.release }}" = "true" ]; then
+          PKGS+=("cmake;3.10.2.4988404" "ndk;28.1.13356709")
+        fi
+        yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" --licenses >/dev/null || true
+        "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" "${PKGS[@]}" >/dev/null
+        mkdir -p "$HOME/.config/godot"
+        MINOR="$(echo "${{ inputs.godot-version }}" | cut -d. -f1,2)"
+        cat > "$HOME/.config/godot/editor_settings-${MINOR}.tres" <<SETTINGS
+        [gd_resource type="EditorSettings" format=3]
+
+        [resource]
+        export/android/android_sdk_path = "$SDK"
+        export/android/java_sdk_path = "$JAVA_HOME"
+        SETTINGS
+        sed -i 's/^        //' "$HOME/.config/godot/editor_settings-${MINOR}.tres"

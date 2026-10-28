@@ -1,0 +1,22 @@
+name: test
+on:
+  pull_request:
+
+jobs:
+  gut:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for tests
+        id: has
+        run: |
+          if [ -d tests ] && [ -f addons/gut/gut_cmdln.gd ]; then echo "run=true" >> "$GITHUB_OUTPUT"; else echo "No tests/ or GUT yet - skipping"; fi
+      - uses: ./.github/actions/setup-godot
+        if: steps.has.outputs.run == 'true'
+      - name: Import project
+        if: steps.has.outputs.run == 'true'
+        run: timeout 300 godot --headless --path . --import || true
+      - name: Run GUT
+        if: steps.has.outputs.run == 'true'
+        run: godot --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit

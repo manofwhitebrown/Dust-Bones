@@ -1,0 +1,112 @@
+name: build-apk
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  debug-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-godot
+        with:
+          android: "true"
+
+      # Cached so the debug signature stays stable and APKs update in place.
+      - name: Restore debug keystore
+        id: ks
+        uses: actions/cache@v4
+        with:
+          path: ~/debug.keystore
+          key: debug-keystore-v1
+      - name: Generate debug keystore
+        if: steps.ks.outputs.cache-hit != 'true'
+        run: >
+          keytool -genkeypair -v -keystore "$HOME/debug.keystore" -alias androiddebugkey
+          -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000
+          -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Import project
+        run: timeout 300 godot --headless --path . --import || true
+
+      - name: Export debug APK
+        run: |
+          set -euo pipefail
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PATH="$HOME/debug.keystore"
+          export GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android
+          mkdir -p build
+          godot --headless --path . --export-debug "Android Debug" build/dust-bones-debug.apk
+          SHA="${GITHUB_SHA::7}"
+          mv build/dust-bones-debug.apk "build/dust-bones-debug-${SHA}.apk"
+          ls -l build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dust-bones-debug-${{ github.sha }}
+          path: build/dust-bones-debug-*.apk
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: debug-apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_ALIAS != '' }}
+    steps:
+      - name: Skip notice
+        if: env.HAS_KEYSTORE != 'true'
+        run: echo "Release secrets not set - skipping signed release."
+      - uses: actions/checkout@v4
+        if: env.HAS_KEYSTORE == 'true'
+      - uses: ./.github/actions/setup-godot
+        if: env.HAS_KEYSTORE == 'true'
+        with:
+          android: "true"
+          release: "true"
+      - name: Cache Gradle
+        if: env.HAS_KEYSTORE == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: gradle-${{ hashFiles('export_presets.cfg') }}
+      - name: Export signed release APK + AAB
+        if: env.HAS_KEYSTORE == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          V="$(sed -n 's/^    default: "\(4\.[0-9.]*\)"/\1/p' .github/actions/setup-godot/action.yml | head -1)"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$HOME/release.keystore"
+          export GODOT_ANDROID_KEYSTORE_RELEASE_PATH="$HOME/release.keystore"
+          # Gradle builds need the Android build template from the export templates.
+          mkdir -p android/build
+          unzip -q "$HOME/.local/share/godot/export_templates/${V}.stable/android_source.zip" -d android/build
+          echo "${V}.stable" > android/.build_version
+          touch android/build/.gdignore
+          timeout 300 godot --headless --path . --import || true
+          mkdir -p build
+          TAG="${GITHUB_REF_NAME}"
+          godot --headless --path . --export-release "Android Release APK" "build/dust-bones-${TAG}.apk"
+          godot --headless --path . --export-release "Android Release AAB" "build/dust-bones-${TAG}.aab"
+          rm -f "$HOME/release.keystore"
+          ls -l build
+      - name: Attach to GitHub Release
+        if: env.HAS_KEYSTORE == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/dust-bones-*.apk
+            build/dust-bones-*.aab
