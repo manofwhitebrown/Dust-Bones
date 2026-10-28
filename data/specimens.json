@@ -1,0 +1,602 @@
+[
+ {
+  "id": "trilobite",
+  "name": "Trilobite",
+  "era": "Cambrian",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 9.4,
+  "weight": 3,
+  "fact": "Trilobites swam, crawled and burrowed in the seas for about 270 million years."
+ },
+ {
+  "id": "brachiopod",
+  "name": "Brachiopod",
+  "era": "Ordovician",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 9.7,
+  "weight": 2,
+  "fact": "Brachiopods look like clams but belong to an entirely different animal group."
+ },
+ {
+  "id": "crinoid_stem",
+  "name": "Crinoid Stem",
+  "era": "Carboniferous",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 10.0,
+  "weight": 2,
+  "fact": "Crinoids are animals, nicknamed sea lilies, and their stem discs are very common fossils."
+ },
+ {
+  "id": "horn_coral",
+  "name": "Horn Coral",
+  "era": "Devonian",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 10.3,
+  "weight": 1,
+  "fact": "Horn corals were solitary corals shaped like a curved horn, common in Paleozoic seas."
+ },
+ {
+  "id": "bryozoan",
+  "name": "Bryozoan Colony",
+  "era": "Ordovician",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 10.6,
+  "weight": 3,
+  "fact": "Bryozoans are tiny colonial animals whose fossils often look like delicate lace."
+ },
+ {
+  "id": "graptolite",
+  "name": "Graptolite",
+  "era": "Ordovician",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 9.4,
+  "weight": 2,
+  "fact": "Graptolite fossils look like pencil marks on shale; the name means 'written in stone'."
+ },
+ {
+  "id": "sea_snail",
+  "name": "Sea Snail",
+  "era": "Carboniferous",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 9.7,
+  "weight": 1,
+  "fact": "Gastropods, the snail group, have left shells in rocks for over 500 million years."
+ },
+ {
+  "id": "clam_shell",
+  "name": "Clam Shell",
+  "era": "Triassic",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 10.0,
+  "weight": 3,
+  "fact": "Bivalve shells are among the most common marine fossils found anywhere."
+ },
+ {
+  "id": "fish_scale",
+  "name": "Fish Scale",
+  "era": "Devonian",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 10.3,
+  "weight": 2,
+  "fact": "Many Devonian fishes wore thick, bony scales as armor."
+ },
+ {
+  "id": "urchin_spine",
+  "name": "Urchin Spine",
+  "era": "Jurassic",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 10.6,
+  "weight": 2,
+  "fact": "Sea urchin spines fall off after death, so they turn up often as fossils."
+ },
+ {
+  "id": "petrified_wood",
+  "name": "Petrified Wood",
+  "era": "Triassic",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 9.4,
+  "weight": 1,
+  "fact": "Petrified wood forms when minerals slowly replace wood, preserving its grain."
+ },
+ {
+  "id": "fern_frond",
+  "name": "Fern Frond",
+  "era": "Carboniferous",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 9.7,
+  "weight": 3,
+  "fact": "Coal-age swamps were full of giant club mosses, horsetails and tree ferns."
+ },
+ {
+  "id": "scale_tree_bark",
+  "name": "Scale Tree Bark",
+  "era": "Carboniferous",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 10.0,
+  "weight": 2,
+  "fact": "Lepidodendron, the scale tree, was a giant relative of modern club mosses."
+ },
+ {
+  "id": "coprolite",
+  "name": "Coprolite",
+  "era": "Permian",
+  "rarity": "common",
+  "site": "dry_creek",
+  "base_value": 10.3,
+  "weight": 1,
+  "fact": "Coprolites are fossilized dung that reveal what ancient animals ate."
+ },
+ {
+  "id": "ammonite",
+  "name": "Ammonite",
+  "era": "Jurassic",
+  "rarity": "uncommon",
+  "site": "dry_creek",
+  "base_value": 20.7,
+  "weight": 3,
+  "fact": "Ammonites were shelled cephalopods, distant cousins of squid and octopus."
+ },
+ {
+  "id": "orthocone",
+  "name": "Orthocone",
+  "era": "Ordovician",
+  "rarity": "uncommon",
+  "site": "dry_creek",
+  "base_value": 21.3,
+  "weight": 2,
+  "fact": "Orthocones were cephalopods with straight shells, and some grew very large."
+ },
+ {
+  "id": "belemnite",
+  "name": "Belemnite Guard",
+  "era": "Jurassic",
+  "rarity": "uncommon",
+  "site": "dry_creek",
+  "base_value": 22.0,
+  "weight": 2,
+  "fact": "Belemnites were squid-like animals; the bullet-shaped fossil is their internal guard."
+ },
+ {
+  "id": "rolled_trilobite",
+  "name": "Enrolled Trilobite",
+  "era": "Devonian",
+  "rarity": "uncommon",
+  "site": "dry_creek",
+  "base_value": 22.7,
+  "weight": 1,
+  "fact": "Some trilobites could curl into a ball for defense, like a modern pill bug."
+ },
+ {
+  "id": "eurypterid",
+  "name": "Eurypterid",
+  "era": "Silurian",
+  "rarity": "uncommon",
+  "site": "dry_creek",
+  "base_value": 23.3,
+  "weight": 3,
+  "fact": "Eurypterids, called sea scorpions, were not true scorpions."
+ },
+ {
+  "id": "goniatite",
+  "name": "Goniatite",
+  "era": "Devonian",
+  "rarity": "uncommon",
+  "site": "dry_creek",
+  "base_value": 20.7,
+  "weight": 2,
+  "fact": "Goniatites were early ammonoids with simple zigzag lines on their shells."
+ },
+ {
+  "id": "ichthyosaur_vertebra",
+  "name": "Ichthyosaur Vertebra",
+  "era": "Jurassic",
+  "rarity": "uncommon",
+  "site": "dry_creek",
+  "base_value": 21.3,
+  "weight": 1,
+  "fact": "Ichthyosaurs were dolphin-shaped marine reptiles that gave birth to live young."
+ },
+ {
+  "id": "glossopteris_leaf",
+  "name": "Glossopteris Leaf",
+  "era": "Permian",
+  "rarity": "uncommon",
+  "site": "dry_creek",
+  "base_value": 22.0,
+  "weight": 3,
+  "fact": "Glossopteris leaves are found on several southern continents, supporting continental drift."
+ },
+ {
+  "id": "dimetrodon_tooth",
+  "name": "Dimetrodon Tooth",
+  "era": "Permian",
+  "rarity": "rare",
+  "site": "dry_creek",
+  "base_value": 45.5,
+  "weight": 3,
+  "fact": "Dimetrodon had a sail on its back and is closer kin to mammals than to dinosaurs."
+ },
+ {
+  "id": "crinoid_crown",
+  "name": "Crinoid Crown",
+  "era": "Carboniferous",
+  "rarity": "rare",
+  "site": "dry_creek",
+  "base_value": 46.9,
+  "weight": 2,
+  "fact": "A crinoid with its arms intact is a rare find, since the body falls apart after death."
+ },
+ {
+  "id": "phytosaur_tooth",
+  "name": "Phytosaur Tooth",
+  "era": "Triassic",
+  "rarity": "rare",
+  "site": "dry_creek",
+  "base_value": 48.4,
+  "weight": 2,
+  "fact": "Phytosaurs looked like crocodiles but belonged to a separate reptile lineage."
+ },
+ {
+  "id": "coelophysis_bone",
+  "name": "Coelophysis Bone",
+  "era": "Triassic",
+  "rarity": "rare",
+  "site": "dry_creek",
+  "base_value": 49.9,
+  "weight": 1,
+  "fact": "Coelophysis was a small, slender, early dinosaur of the Late Triassic."
+ },
+ {
+  "id": "meganeura_wing",
+  "name": "Meganeura Wing",
+  "era": "Carboniferous",
+  "rarity": "rare",
+  "site": "dry_creek",
+  "base_value": 51.3,
+  "weight": 3,
+  "fact": "Meganeura was a giant dragonfly-like insect with a wingspan over half a meter."
+ },
+ {
+  "id": "dunkleosteus_plate",
+  "name": "Dunkleosteus Plate",
+  "era": "Devonian",
+  "rarity": "epic",
+  "site": "dry_creek",
+  "base_value": 100.1,
+  "weight": 3,
+  "fact": "Dunkleosteus was an armored fish whose jaws bore sharp bony plates instead of teeth."
+ },
+ {
+  "id": "anomalocaris_appendage",
+  "name": "Anomalocaris Appendage",
+  "era": "Cambrian",
+  "rarity": "epic",
+  "site": "dry_creek",
+  "base_value": 103.3,
+  "weight": 2,
+  "fact": "Anomalocaris was a top Cambrian predator, often fossilized as just its grasping limbs."
+ },
+ {
+  "id": "archaeopteryx_feather",
+  "name": "Archaeopteryx Feather",
+  "era": "Jurassic",
+  "rarity": "legendary",
+  "site": "dry_creek",
+  "base_value": 220.2,
+  "weight": 3,
+  "fact": "Archaeopteryx had feathers and wings, yet also teeth and a long bony tail."
+ },
+ {
+  "id": "fossil_shark_tooth",
+  "name": "Shark Tooth",
+  "era": "Paleogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 94.0,
+  "weight": 3,
+  "fact": "Sharks shed teeth constantly, so their fossil teeth are plentiful."
+ },
+ {
+  "id": "oyster_shell",
+  "name": "Oyster Shell",
+  "era": "Cretaceous",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 97.0,
+  "weight": 2,
+  "fact": "Oysters have built dense shell beds in the sea since the Triassic."
+ },
+ {
+  "id": "sand_dollar",
+  "name": "Sand Dollar",
+  "era": "Paleogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 100.0,
+  "weight": 2,
+  "fact": "Sand dollars are flattened sea urchins that burrow through sandy seabeds."
+ },
+ {
+  "id": "turritella",
+  "name": "Turritella Snail",
+  "era": "Paleogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 103.0,
+  "weight": 1,
+  "fact": "Turritella are tall, spiral sea snails that are abundant in many Cenozoic rocks."
+ },
+ {
+  "id": "scallop",
+  "name": "Scallop Shell",
+  "era": "Neogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 106.0,
+  "weight": 3,
+  "fact": "Scallops swim by clapping their two shells together."
+ },
+ {
+  "id": "reef_coral",
+  "name": "Reef Coral",
+  "era": "Neogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 94.0,
+  "weight": 2,
+  "fact": "Reef corals build limestone reefs that can outlast the animals themselves."
+ },
+ {
+  "id": "nummulite",
+  "name": "Nummulite",
+  "era": "Paleogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 97.0,
+  "weight": 1,
+  "fact": "Nummulites are coin-shaped shells of giant single-celled organisms."
+ },
+ {
+  "id": "leaf_impression",
+  "name": "Leaf Impression",
+  "era": "Paleogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 100.0,
+  "weight": 3,
+  "fact": "Leaf impressions reveal what ancient forests looked like."
+ },
+ {
+  "id": "gar_scale",
+  "name": "Gar Scale",
+  "era": "Paleogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 103.0,
+  "weight": 2,
+  "fact": "Gars are ancient fishes with hard, diamond-shaped scales."
+ },
+ {
+  "id": "crab_claw",
+  "name": "Crab Claw",
+  "era": "Cretaceous",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 106.0,
+  "weight": 2,
+  "fact": "Crab claws are tough, so they fossilize more often than whole crabs."
+ },
+ {
+  "id": "turtle_shell",
+  "name": "Turtle Shell Piece",
+  "era": "Cretaceous",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 94.0,
+  "weight": 1,
+  "fact": "Turtle shells are built from fused bone, which helps them survive burial."
+ },
+ {
+  "id": "crocodile_scute",
+  "name": "Crocodile Scute",
+  "era": "Cretaceous",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 97.0,
+  "weight": 3,
+  "fact": "Crocodile relatives have bony plates called scutes embedded in their skin."
+ },
+ {
+  "id": "lignite",
+  "name": "Lignite",
+  "era": "Paleogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 100.0,
+  "weight": 2,
+  "fact": "Lignite is soft brown coal formed from buried plant matter."
+ },
+ {
+  "id": "conifer_cone",
+  "name": "Conifer Cone",
+  "era": "Paleogene",
+  "rarity": "common",
+  "site": "salt_flats",
+  "base_value": 103.0,
+  "weight": 1,
+  "fact": "Fossil cones show which conifers grew in ancient forests."
+ },
+ {
+  "id": "baculite",
+  "name": "Baculite",
+  "era": "Cretaceous",
+  "rarity": "uncommon",
+  "site": "salt_flats",
+  "base_value": 206.8,
+  "weight": 3,
+  "fact": "Baculites were ammonites with straight shells instead of coiled ones."
+ },
+ {
+  "id": "mosasaur_tooth",
+  "name": "Mosasaur Tooth",
+  "era": "Cretaceous",
+  "rarity": "uncommon",
+  "site": "salt_flats",
+  "base_value": 213.4,
+  "weight": 2,
+  "fact": "Mosasaurs were giant marine reptiles related to monitor lizards."
+ },
+ {
+  "id": "plesiosaur_tooth",
+  "name": "Plesiosaur Tooth",
+  "era": "Cretaceous",
+  "rarity": "uncommon",
+  "site": "salt_flats",
+  "base_value": 220.0,
+  "weight": 2,
+  "fact": "Plesiosaurs were marine reptiles with four paddle-shaped flippers."
+ },
+ {
+  "id": "horse_tooth",
+  "name": "Fossil Horse Tooth",
+  "era": "Neogene",
+  "rarity": "uncommon",
+  "site": "salt_flats",
+  "base_value": 226.6,
+  "weight": 1,
+  "fact": "Horses started out small and had several toes on each foot."
+ },
+ {
+  "id": "amber",
+  "name": "Amber Piece",
+  "era": "Paleogene",
+  "rarity": "uncommon",
+  "site": "salt_flats",
+  "base_value": 233.2,
+  "weight": 3,
+  "fact": "Amber is fossil tree resin and can trap tiny insects for millions of years."
+ },
+ {
+  "id": "eggshell",
+  "name": "Dinosaur Eggshell",
+  "era": "Cretaceous",
+  "rarity": "uncommon",
+  "site": "salt_flats",
+  "base_value": 206.8,
+  "weight": 2,
+  "fact": "Fossil eggshell fragments show where dinosaurs once nested."
+ },
+ {
+  "id": "sirenian_rib",
+  "name": "Sea Cow Rib",
+  "era": "Paleogene",
+  "rarity": "uncommon",
+  "site": "salt_flats",
+  "base_value": 213.4,
+  "weight": 1,
+  "fact": "The ancestors of manatees once walked on four legs."
+ },
+ {
+  "id": "pterosaur_bone",
+  "name": "Pterosaur Bone",
+  "era": "Cretaceous",
+  "rarity": "uncommon",
+  "site": "salt_flats",
+  "base_value": 220.0,
+  "weight": 3,
+  "fact": "Pterosaur bones were thin and hollow, so they rarely survive as fossils."
+ },
+ {
+  "id": "hadrosaur_tooth",
+  "name": "Hadrosaur Tooth",
+  "era": "Cretaceous",
+  "rarity": "rare",
+  "site": "salt_flats",
+  "base_value": 455.0,
+  "weight": 3,
+  "fact": "Hadrosaurs ground plants with hundreds of tightly packed teeth."
+ },
+ {
+  "id": "ankylosaur_armor",
+  "name": "Ankylosaur Armor",
+  "era": "Cretaceous",
+  "rarity": "rare",
+  "site": "salt_flats",
+  "base_value": 469.5,
+  "weight": 2,
+  "fact": "Ankylosaurs were covered in bony plates embedded in their skin."
+ },
+ {
+  "id": "basilosaurus_tooth",
+  "name": "Basilosaurus Tooth",
+  "era": "Paleogene",
+  "rarity": "rare",
+  "site": "salt_flats",
+  "base_value": 484.0,
+  "weight": 2,
+  "fact": "Basilosaurus was an early whale that still had tiny hind limbs."
+ },
+ {
+  "id": "titanoboa_vertebra",
+  "name": "Titanoboa Vertebra",
+  "era": "Paleogene",
+  "rarity": "rare",
+  "site": "salt_flats",
+  "base_value": 498.5,
+  "weight": 1,
+  "fact": "Titanoboa was a giant snake that lived after the dinosaurs died out."
+ },
+ {
+  "id": "smilodon_canine",
+  "name": "Smilodon Canine",
+  "era": "Quaternary",
+  "rarity": "rare",
+  "site": "salt_flats",
+  "base_value": 513.0,
+  "weight": 3,
+  "fact": "Smilodon's famous saber teeth were long but relatively fragile."
+ },
+ {
+  "id": "megalodon_tooth",
+  "name": "Megalodon Tooth",
+  "era": "Neogene",
+  "rarity": "epic",
+  "site": "salt_flats",
+  "base_value": 1000.9,
+  "weight": 3,
+  "fact": "Megalodon teeth can be larger than a human hand."
+ },
+ {
+  "id": "trex_tooth",
+  "name": "T. rex Tooth",
+  "era": "Cretaceous",
+  "rarity": "epic",
+  "site": "salt_flats",
+  "base_value": 1032.9,
+  "weight": 2,
+  "fact": "Tyrannosaurus rex had thick, deeply rooted teeth built for crushing bone."
+ },
+ {
+  "id": "mammoth_tusk",
+  "name": "Mammoth Tusk",
+  "era": "Quaternary",
+  "rarity": "legendary",
+  "site": "salt_flats",
+  "base_value": 2202.0,
+  "weight": 3,
+  "fact": "Woolly mammoth tusks kept growing throughout the animal's life."
+ }
+]

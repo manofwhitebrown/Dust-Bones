@@ -1,0 +1,97 @@
+[
+ {
+  "id": "soft_bristle",
+  "name": "Soft Bristle",
+  "desc": "A gentle brush for loose dust.",
+  "icon": "soft_bristle",
+  "base_cost": 0,
+  "cost_growth": 1.0,
+  "brush_power": 1.0,
+  "requires": {}
+ },
+ {
+  "id": "sable",
+  "name": "Sable Brush",
+  "desc": "Fine hairs reach into small cracks.",
+  "icon": "sable",
+  "base_cost": 120,
+  "cost_growth": 1.0,
+  "brush_power": 1.25,
+  "requires": {
+   "item_id": "soft_bristle"
+  }
+ },
+ {
+  "id": "badger",
+  "name": "Badger Hair",
+  "desc": "Dense, soft and great for big sweeps.",
+  "icon": "badger",
+  "base_cost": 720,
+  "cost_growth": 1.0,
+  "brush_power": 1.5,
+  "requires": {
+   "item_id": "sable"
+  }
+ },
+ {
+  "id": "brass_bristle",
+  "name": "Brass Bristle",
+  "desc": "Stiff metal bristles for baked-on dirt.",
+  "icon": "brass_bristle",
+  "base_cost": 4320,
+  "cost_growth": 1.0,
+  "brush_power": 1.85,
+  "requires": {
+   "item_id": "badger"
+  }
+ },
+ {
+  "id": "air_scribe",
+  "name": "Air Scribe",
+  "desc": "A tiny pneumatic chisel.",
+  "icon": "air_scribe",
+  "base_cost": 25920,
+  "cost_growth": 1.0,
+  "brush_power": 2.2,
+  "requires": {
+   "item_id": "brass_bristle"
+  }
+ },
+ {
+  "id": "micro_blaster",
+  "name": "Micro Blaster",
+  "desc": "Fine abrasive powder, blasted gently.",
+  "icon": "micro_blaster",
+  "base_cost": 155520,
+  "cost_growth": 1.0,
+  "brush_power": 2.7,
+  "requires": {
+   "item_id": "air_scribe"
+  }
+ },
+ {
+  "id": "sonic_scaler",
+  "name": "Sonic Scaler",
+  "desc": "Vibration shakes the grit loose.",
+  "icon": "sonic_scaler",
+  "base_cost": 933120,
+  "cost_growth": 1.0,
+  "brush_power": 3.1,
+  "requires": {
+   "item_id": "micro_blaster"
+  }
+ },
+ {
+  "id": "ultrasonic",
+  "name": "Ultrasonic Cleaner",
+  "desc": "The lab's finest tool.",
+  "icon": "ultrasonic",
+  "base_cost": 5598720,
+  "cost_growth": 1.0,
+  "brush_power": 3.5,
+  "requires": {
+   "item_id": "sonic_scaler",
+   "fieldwork": 5
+  }
+ }
+]

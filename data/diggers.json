@@ -1,0 +1,72 @@
+[
+ {
+  "id": "intern",
+  "name": "Intern",
+  "desc": "Keen, unpaid and surprisingly careful.",
+  "icon": "intern",
+  "base_cost": 180,
+  "cost_growth": 1.14,
+  "slabs_per_sec": 0.02,
+  "requires": {}
+ },
+ {
+  "id": "field_crew",
+  "name": "Field Crew",
+  "desc": "A small team with trowels and thermoses.",
+  "icon": "field_crew",
+  "base_cost": 1500,
+  "cost_growth": 1.14,
+  "slabs_per_sec": 0.12,
+  "requires": {
+   "item_id": "intern"
+  }
+ },
+ {
+  "id": "mini_excavator",
+  "name": "Mini Excavator",
+  "desc": "Moves a lot of dirt gently.",
+  "icon": "mini_excavator",
+  "base_cost": 12000,
+  "cost_growth": 1.15,
+  "slabs_per_sec": 0.7,
+  "requires": {
+   "item_id": "field_crew"
+  }
+ },
+ {
+  "id": "excavator",
+  "name": "Excavator",
+  "desc": "Heavy machinery with a careful operator.",
+  "icon": "excavator",
+  "base_cost": 100000,
+  "cost_growth": 1.15,
+  "slabs_per_sec": 3.5,
+  "requires": {
+   "item_id": "mini_excavator"
+  }
+ },
+ {
+  "id": "quarry_crew",
+  "name": "Quarry Crew",
+  "desc": "Professional crews working the whole face.",
+  "icon": "quarry_crew",
+  "base_cost": 900000,
+  "cost_growth": 1.16,
+  "slabs_per_sec": 10,
+  "requires": {
+   "item_id": "excavator"
+  }
+ },
+ {
+  "id": "drill_rig",
+  "name": "Drill Rig",
+  "desc": "Core samples by the truckload.",
+  "icon": "drill_rig",
+  "base_cost": 8000000,
+  "cost_growth": 1.17,
+  "slabs_per_sec": 25,
+  "requires": {
+   "item_id": "quarry_crew"
+  }
+ }
+]
