@@ -1,0 +1,263 @@
+[
+ {
+  "id": "hand_lens",
+  "name": "Hand Lens",
+  "desc": "Spot details while brushing.",
+  "icon": "hand_lens",
+  "base_cost": 100,
+  "cost_growth": 2.5,
+  "max_owned": 5,
+  "effect_type": "click_value_mult",
+  "effect_value": 0.25,
+  "requires": {}
+ },
+ {
+  "id": "field_notebook",
+  "name": "Field Notebook",
+  "desc": "Careful notes raise a find's value.",
+  "icon": "field_notebook",
+  "base_cost": 800,
+  "cost_growth": 2.8,
+  "max_owned": 5,
+  "effect_type": "click_value_mult",
+  "effect_value": 0.4,
+  "requires": {}
+ },
+ {
+  "id": "lab_lamp",
+  "name": "Bright Lab Lamp",
+  "desc": "Better light, better provenance.",
+  "icon": "lab_lamp",
+  "base_cost": 9000,
+  "cost_growth": 3.0,
+  "max_owned": 4,
+  "effect_type": "click_value_mult",
+  "effect_value": 0.6,
+  "requires": {
+   "fieldwork": 1
+  }
+ },
+ {
+  "id": "thermos",
+  "name": "Thermos of Tea",
+  "desc": "Interns work faster.",
+  "icon": "thermos",
+  "base_cost": 400,
+  "cost_growth": 2.5,
+  "max_owned": 5,
+  "effect_type": "digger_speed_mult",
+  "effect_value": 0.1,
+  "requires": {
+   "item_id": "intern"
+  }
+ },
+ {
+  "id": "field_radio",
+  "name": "Field Radio",
+  "desc": "Crews stay coordinated.",
+  "icon": "field_radio",
+  "base_cost": 4000,
+  "cost_growth": 2.6,
+  "max_owned": 5,
+  "effect_type": "digger_speed_mult",
+  "effect_value": 0.15,
+  "requires": {
+   "item_id": "field_crew"
+  }
+ },
+ {
+  "id": "gps_survey",
+  "name": "GPS Survey",
+  "desc": "Dig exactly where the fossils are.",
+  "icon": "gps_survey",
+  "base_cost": 40000,
+  "cost_growth": 2.7,
+  "max_owned": 5,
+  "effect_type": "digger_speed_mult",
+  "effect_value": 0.2,
+  "requires": {
+   "item_id": "mini_excavator"
+  }
+ },
+ {
+  "id": "shift_rota",
+  "name": "Shift Rota",
+  "desc": "Machines run all day.",
+  "icon": "shift_rota",
+  "base_cost": 400000,
+  "cost_growth": 2.8,
+  "max_owned": 5,
+  "effect_type": "digger_speed_mult",
+  "effect_value": 0.25,
+  "requires": {
+   "item_id": "excavator"
+  }
+ },
+ {
+  "id": "geologist_eye",
+  "name": "Geologist's Eye",
+  "desc": "Read the rock for richer layers.",
+  "icon": "geologist_eye",
+  "base_cost": 1500,
+  "cost_growth": 3.0,
+  "max_owned": 5,
+  "effect_type": "rarity_luck",
+  "effect_value": 0.05,
+  "requires": {}
+ },
+ {
+  "id": "metal_detector",
+  "name": "Probe & Sieve",
+  "desc": "Sift out the good stuff.",
+  "icon": "metal_detector",
+  "base_cost": 20000,
+  "cost_growth": 3.2,
+  "max_owned": 5,
+  "effect_type": "rarity_luck",
+  "effect_value": 0.08,
+  "requires": {
+   "item_id": "field_crew"
+  }
+ },
+ {
+  "id": "survey_maps",
+  "name": "Old Survey Maps",
+  "desc": "Maps from past digs.",
+  "icon": "survey_maps",
+  "base_cost": 150000,
+  "cost_growth": 3.4,
+  "max_owned": 4,
+  "effect_type": "rarity_luck",
+  "effect_value": 0.12,
+  "requires": {
+   "fieldwork": 1
+  }
+ },
+ {
+  "id": "camp_tent",
+  "name": "Camp Tent",
+  "desc": "Crews keep working while you're away.",
+  "icon": "camp_tent",
+  "base_cost": 2500,
+  "cost_growth": 4.0,
+  "max_owned": 3,
+  "effect_type": "offline_cap_hours_add",
+  "effect_value": 2,
+  "requires": {
+   "item_id": "intern"
+  }
+ },
+ {
+  "id": "night_lanterns",
+  "name": "Night Lanterns",
+  "desc": "Work well into the night.",
+  "icon": "night_lanterns",
+  "base_cost": 60000,
+  "cost_growth": 4.5,
+  "max_owned": 3,
+  "effect_type": "offline_cap_hours_add",
+  "effect_value": 3,
+  "requires": {
+   "fieldwork": 2
+  }
+ },
+ {
+  "id": "radio_log",
+  "name": "Radio Log",
+  "desc": "Crews report in while you're away.",
+  "icon": "radio_log",
+  "base_cost": 6000,
+  "cost_growth": 3.5,
+  "max_owned": 3,
+  "effect_type": "offline_efficiency_add",
+  "effect_value": 0.08,
+  "requires": {
+   "item_id": "field_crew"
+  }
+ },
+ {
+  "id": "trail_cameras",
+  "name": "Trail Cameras",
+  "desc": "Watch the site from afar.",
+  "icon": "trail_cameras",
+  "base_cost": 90000,
+  "cost_growth": 4.0,
+  "max_owned": 3,
+  "effect_type": "offline_efficiency_add",
+  "effect_value": 0.12,
+  "requires": {
+   "fieldwork": 1
+  }
+ },
+ {
+  "id": "devonian_guide",
+  "name": "Devonian Field Guide",
+  "desc": "Age of Fishes finds are worth more.",
+  "icon": "devonian_guide",
+  "base_cost": 3000,
+  "cost_growth": 3.0,
+  "max_owned": 4,
+  "effect_type": "value_mult_era",
+  "effect_value": 0.5,
+  "requires": {},
+  "era": "Devonian"
+ },
+ {
+  "id": "jurassic_guide",
+  "name": "Jurassic Field Guide",
+  "desc": "Jurassic finds are worth more.",
+  "icon": "jurassic_guide",
+  "base_cost": 12000,
+  "cost_growth": 3.0,
+  "max_owned": 4,
+  "effect_type": "value_mult_era",
+  "effect_value": 0.5,
+  "requires": {
+   "item_id": "field_crew"
+  },
+  "era": "Jurassic"
+ },
+ {
+  "id": "cretaceous_guide",
+  "name": "Cretaceous Field Guide",
+  "desc": "Cretaceous finds are worth more.",
+  "icon": "cretaceous_guide",
+  "base_cost": 80000,
+  "cost_growth": 3.0,
+  "max_owned": 4,
+  "effect_type": "value_mult_era",
+  "effect_value": 0.5,
+  "requires": {
+   "fieldwork": 1
+  },
+  "era": "Cretaceous"
+ },
+ {
+  "id": "museum_grant",
+  "name": "Museum Grant",
+  "desc": "Funders reward bigger digs.",
+  "icon": "museum_grant",
+  "base_cost": 20000,
+  "cost_growth": 4.0,
+  "max_owned": 5,
+  "effect_type": "fieldwork_gain_mult",
+  "effect_value": 0.1,
+  "requires": {
+   "item_id": "mini_excavator"
+  }
+ },
+ {
+  "id": "university_pact",
+  "name": "University Pact",
+  "desc": "A partnership boosts your reputation.",
+  "icon": "university_pact",
+  "base_cost": 500000,
+  "cost_growth": 5.0,
+  "max_owned": 3,
+  "effect_type": "fieldwork_gain_mult",
+  "effect_value": 0.15,
+  "requires": {
+   "fieldwork": 2
+  }
+ }
+]
