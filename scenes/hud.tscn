@@ -1,0 +1,93 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://src/ui/tick_label.gd" id="2_tick"]
+
+[sub_resource type="StyleBoxFlat" id="Style_coin"]
+bg_color = Color(0.949, 0.722, 0.294, 1)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.231, 0.141, 0.09, 1)
+
+[sub_resource type="StyleBoxFlat" id="Style_field"]
+bg_color = Color(0.753, 0.392, 0.235, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="HUD" type="PanelContainer"]
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+theme_type_variation = &"HudPanel"
+script = ExtResource("1_hud")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 20
+
+[node name="Row" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Left" type="VBoxContainer" parent="Margin/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CoinsRow" type="HBoxContainer" parent="Margin/Row/Left"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 18
+
+[node name="CoinIcon" type="Panel" parent="Margin/Row/Left/CoinsRow"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_coin")
+
+[node name="Coins" type="Label" parent="Margin/Row/Left/CoinsRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 72
+text = "0"
+script = ExtResource("2_tick")
+
+[node name="Income" type="Label" parent="Margin/Row/Left"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "+0/s"
+script = ExtResource("2_tick")
+prefix = "+"
+suffix = "/s"
+
+[node name="FieldRow" type="HBoxContainer" parent="Margin/Row"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 14
+
+[node name="FieldIcon" type="Panel" parent="Margin/Row/FieldRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_field")
+
+[node name="Fieldwork" type="Label" parent="Margin/Row/FieldRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+text = "0"
+script = ExtResource("2_tick")

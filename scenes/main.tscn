@@ -1,6 +1,10 @@
 [gd_scene format=3]
 
-[ext_resource type="PackedScene" path="res://scenes/dig_view.tscn" id="1_dig"]
+[ext_resource type="Script" path="res://src/ui/main.gd" id="1_main"]
+[ext_resource type="Theme" path="res://src/ui/theme/dust_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://scenes/dig_view.tscn" id="3_dig"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/nav_bar.tscn" id="5_nav"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -9,6 +13,32 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_main")
 
-[node name="DigView" parent="." instance=ExtResource("1_dig")]
+[node name="DigView" parent="." instance=ExtResource("3_dig")]
+layout_mode = 1
+
+[node name="Views" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Bg" type="ColorRect" parent="Views"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.847, 0.737, 0.569, 1)
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+layout_mode = 1
+
+[node name="NavBar" parent="." instance=ExtResource("5_nav")]
 layout_mode = 1
