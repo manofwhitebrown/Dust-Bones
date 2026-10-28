@@ -1,6 +1,5 @@
 extends Node
 ## Thin facade over src/core/*: owns the tick loop, save/lifecycle and EventBus emissions.
-## Prestige (preview/do_prestige) is a placeholder until M3.
 
 const EventBusType: GDScript = preload("res://src/autoload/event_bus.gd")
 
@@ -40,6 +39,8 @@ var _owned: Dictionary = {}
 var _site_id: String = ""
 var _next_slab_id: int = 0
 var _slab_frac: float = 0.0
+var _fieldwork_basis: float = 0.0
+var _prestige_avail: bool = false
 var _pending_offline: Dictionary = {}
 var _last_active: float = 0.0
 
@@ -89,6 +90,7 @@ func boot() -> void:
 		pity = _apply_state(saved)
 	_build_generator(pity)
 	_recalc()
+	_prestige_avail = _prestige_gain() >= 1.0
 	_booted = true
 	check_offline()
 
@@ -132,6 +134,7 @@ func _tick(dt: float) -> void:
 	_summary_t += dt
 	if _summary_t >= SUMMARY_INTERVAL - EPS:
 		_flush_summary()
+		_update_prestige_available()
 	_flush_currency()
 	_autosave_t += dt
 	if _autosave_t >= float(_data.config["autosave_seconds"]):
@@ -236,8 +239,7 @@ func get_brush_power() -> float:
 
 
 func get_current_site() -> Dictionary:
-	var s: Dictionary = _data.site_by_id[_site_id]
-	return {"id": s["id"], "name": s["name"], "bg_tint": s["bg_tint"], "rock_tint": s["rock_tint"]}
+	return _site_dict(_data.site_by_id[_site_id])
 
 
 # ---------------------------------------------------------------- slabs
@@ -480,14 +482,58 @@ func claim_offline_report() -> void:
 			bus.specimen_discovered.emit(id)
 
 
-# ---------------------------------------------------------------- prestige (M3 placeholder)
+# ---------------------------------------------------------------- prestige
 
 func get_prestige_preview() -> Dictionary:
-	return {"can_prestige": false, "fieldwork_gain": 0.0, "bonus_text": "", "next_site": {}}
+	var gain: float = _prestige_gain()
+	var after: float = _fieldwork + gain
+	var site: Dictionary = Prestige.next_site(_data.sites_in_order(), _site_id, after)
+	return {
+		"can_prestige": gain >= 1.0, "fieldwork_gain": gain,
+		"bonus_text": Prestige.bonus_text(after, float(_data.prestige["per_fieldwork_income_mult"])),
+		"next_site": _site_dict(site),
+	}
 
 
+## Resets the run (coins, brushes, diggers, upgrades, slabs) and moves to the next site.
+## Keeps collection, fieldwork, lifetime stats and the pity-free fresh generator.
 func do_prestige() -> void:
-	pass
+	var gain: float = _prestige_gain()
+	if gain < 1.0:
+		return
+	_fieldwork_basis += Prestige.raw_gain(_total_coins, _fieldwork_basis, _data.prestige)
+	_fieldwork = Economy.clamp_value(_fieldwork + gain)
+	_site_id = str(Prestige.next_site(_data.sites_in_order(), _site_id, _fieldwork)["id"])
+	_coins = 0.0
+	_owned = {str(_data.tools[0]["id"]): 1}
+	_slab_frac = 0.0
+	_active.clear()
+	_reset_summary()
+	_build_generator({})
+	_recalc()
+	bus.prestige_done.emit({"site_id": _site_id, "fieldwork_gained": gain, "total_fieldwork": _fieldwork})
+	bus.site_changed.emit(get_current_site())
+	_prestige_avail = false
+	bus.prestige_available_changed.emit(false)
+	_touch(CURRENCY_COINS)
+	_touch(CURRENCY_FIELDWORK)
+	save_now()
+
+
+func _prestige_gain() -> float:
+	var mult: float = Economy.upgrade_multiplier(_owned, _data.upgrades, "fieldwork_gain_mult")
+	return Prestige.gain(_total_coins, _fieldwork_basis, _data.prestige, mult)
+
+
+func _update_prestige_available() -> void:
+	var now_ok: bool = _prestige_gain() >= 1.0
+	if now_ok != _prestige_avail:
+		_prestige_avail = now_ok
+		bus.prestige_available_changed.emit(now_ok)
+
+
+func _site_dict(s: Dictionary) -> Dictionary:
+	return {"id": s["id"], "name": s["name"], "bg_tint": s["bg_tint"], "rock_tint": s["rock_tint"]}
 
 
 # ---------------------------------------------------------------- stats / save
@@ -527,6 +573,8 @@ func _new_game() -> void:
 	_site_id = str(_data.sites_in_order()[0]["id"])
 	_next_slab_id = 0
 	_slab_frac = 0.0
+	_fieldwork_basis = 0.0
+	_prestige_avail = false
 	_pending_offline = {}
 	_active.clear()
 	_collection = Collection.new(_data)
@@ -546,7 +594,7 @@ func _build_state() -> Dictionary:
 		"coins": _coins, "fieldwork": _fieldwork, "total_coins": _total_coins,
 		"slabs_dug": _slabs_dug, "play_seconds": _play_seconds, "owned": _owned.duplicate(),
 		"discovered": _collection.to_array(), "site_id": _site_id, "next_slab_id": _next_slab_id,
-		"slab_frac": _slab_frac, "pity": _gen.get_state(), "pending_offline": _pending_offline.duplicate(true),
+		"slab_frac": _slab_frac, "fieldwork_basis": _fieldwork_basis, "pity": _gen.get_state(), "pending_offline": _pending_offline.duplicate(true),
 	}
 
 
@@ -559,6 +607,7 @@ func _apply_state(s: Dictionary) -> Dictionary:
 	_play_seconds = _clean(s.get("play_seconds", 0.0))
 	_next_slab_id = maxi(int(s.get("next_slab_id", 0)), 0)
 	_slab_frac = minf(_clean(s.get("slab_frac", 0.0)), 1.0)
+	_fieldwork_basis = _clean(s.get("fieldwork_basis", 0.0))
 	_last_active = float(s.get("saved_at", _now()))
 	var site: String = str(s.get("site_id", _site_id))
 	if _data.site_by_id.has(site):
