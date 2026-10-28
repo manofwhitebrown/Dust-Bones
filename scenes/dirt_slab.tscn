@@ -1,0 +1,81 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/dirt_slab.gd" id="1_slab"]
+[ext_resource type="Shader" path="res://shaders/dirt_mask.gdshader" id="2_shader"]
+[ext_resource type="Script" path="res://src/ui/procedural_fossil.gd" id="3_fossil"]
+
+[sub_resource type="StyleBoxFlat" id="Style_rock"]
+resource_local_to_scene = true
+bg_color = Color(0.36, 0.27, 0.2, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="ShaderMaterial" id="Mat_dirt"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+
+[node name="DirtSlab" type="Control"]
+clip_contents = true
+custom_minimum_size = Vector2(960, 960)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 960.0
+offset_bottom = 960.0
+script = ExtResource("1_slab")
+
+[node name="Rock" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_rock")
+
+[node name="Art" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 110.0
+offset_top = 110.0
+offset_right = -110.0
+offset_bottom = -110.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Fossil" type="Control" parent="Art"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_fossil")
+
+[node name="Photo" type="TextureRect" parent="Art"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Dirt" type="ColorRect" parent="."]
+material = SubResource("Mat_dirt")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

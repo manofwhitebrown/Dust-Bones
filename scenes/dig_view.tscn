@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/dig_view.gd" id="1_dig"]
+[ext_resource type="PackedScene" path="res://scenes/dirt_slab.tscn" id="2_slab"]
+[ext_resource type="Script" path="res://src/ui/brush_hint.gd" id="3_hint"]
+
+[node name="DigView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_dig")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.847, 0.737, 0.569, 1)
+
+[node name="SlabA" parent="." instance=ExtResource("2_slab")]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="SlabB" parent="." instance=ExtResource("2_slab")]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Hint" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("3_hint")
+
+[node name="HintTimer" type="Timer" parent="."]
