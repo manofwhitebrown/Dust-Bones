@@ -2,6 +2,8 @@ extends Control
 ## App shell: HUD on top, tabs on the bottom, one view visible at a time.
 
 const TAB_DIG: StringName = &"dig"
+const MUSEUM_SCENE: PackedScene = preload("res://scenes/museum_view.tscn")
+const SHOP_SCENE: PackedScene = preload("res://scenes/shop_view.tscn")
 
 var _views: Dictionary = {} # tab -> Control (non-dig tabs live under $Views)
 
@@ -21,8 +23,8 @@ func _ready() -> void:
 	_nav.set_prestige_dot(bool(GameState.get_prestige_preview().get("can_prestige", false)))
 	_fx.museum_pulse.connect(_nav.pulse.bind(&"museum"))
 	_dig.reveal_started.connect(_on_reveal_started)
-	register_view(&"shop", PlaceholderView.new().setup("Shop"))
-	register_view(&"museum", PlaceholderView.new().setup("Museum"))
+	register_view(&"shop", SHOP_SCENE.instantiate() as Control)
+	register_view(&"museum", MUSEUM_SCENE.instantiate() as Control)
 	register_view(&"prestige", PlaceholderView.new().setup("Prestige"))
 	_apply_insets()
 	_show_tab(TAB_DIG)

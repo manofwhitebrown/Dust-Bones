@@ -19,6 +19,17 @@ static func set_bool(key: String, value: bool) -> void:
 	_cfg.save(PATH)
 
 
+static func get_string(key: String, default_value: String = "") -> String:
+	_ensure()
+	return String(_cfg.get_value(SECTION, key, default_value))
+
+
+static func set_string(key: String, value: String) -> void:
+	_ensure()
+	_cfg.set_value(SECTION, key, value)
+	_cfg.save(PATH)
+
+
 static func _ensure() -> void:
 	if _cfg == null:
 		_cfg = ConfigFile.new()
